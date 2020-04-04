@@ -1,0 +1,46 @@
+<!doctype html>
+<title>Hello from Flask</title>
+{% if mess %}
+<h1>Hello {{ mess }}!</h1>
+{% else %}
+<h1>Hello, World!</h1>
+{% endif %}
+
+<div id="quote1_tobeadded"></div>
+<br>
+<div id="EN_DE"></div>
+<br>
+<div id="EN_FR"></div>
+<br>
+<div id="DE_EN"></div>
+<br>
+<div id="DE_FR"></div>
+<script>
+    function fetchAndSet(lang) {
+        const xhr = new XMLHttpRequest();
+        const url = `http://127.0.0.1:5000/api/v1/resources/dicts?lang=${lang}&random=true`
+        xhr.open("GET", url);
+        xhr.setRequestHeader("Authorization", "Basic " + btoa("tom" + ":" + "thisIStom"))
+        xhr.timeout = 2000
+        xhr.send();
+
+        xhr.onreadystatechange = (e) => {
+            try {
+                payload = JSON.parse(xhr.responseText)
+                document.getElementById(lang).innerHTML = `
+            ${payload[0].line} - <i>${lang}</i>`
+            } catch (e) {
+                // hm?
+            }
+        }
+    }
+    langs = ["EN_DE","EN_FR","DE_EN","DE_FR"]
+    setInterval(function() { 
+        langs.forEach(lang => {
+        fetchAndSet(lang);
+        // console.log("shiet")
+    }); }, 3000);
+    
+    
+    
+</script>
