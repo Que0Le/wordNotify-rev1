@@ -5,6 +5,7 @@ from plyer import notification
 from sys import platform
 from win10toast import ToastNotifier
 import webbrowser
+# The other candidate for notification windows is https://github.com/malja/zroya
 
 class myGame(threading.Thread):
     def __init__(self):
