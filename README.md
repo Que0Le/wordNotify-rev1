@@ -12,3 +12,10 @@ python -m pip install git+https://github.com/Charnelx/Windows-10-Toast-Notificat
 pip install pyinstaller
 pyinstaller yourprogram.py
 ```
+
+Some example:
+``` bash
+# Enter this in browser
+http://127.0.0.1:5000/api/v1/resources/dicts?dict_db=DE_FR&random=true
+
+```

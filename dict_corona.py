@@ -16,20 +16,15 @@ from localClass import *
 import os, time
 import threading, queue
 
-# sf = SettingFile()
-# global global_config
-# global_config = sf.readConfigFile()
-
-# game = myGame()
 ############################
 app = flask.Flask(__name__)
 # app.config["DEBUG"] = True
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-users = {
-    "tom": generate_password_hash("thisIStom"),
-    "jerry": generate_password_hash("ThatisJerry")
-}
+# users = {
+#     "tom": generate_password_hash("thisIStom"),
+#     "jerry": generate_password_hash("ThatisJerry")
+# }
 auth = HTTPBasicAuth()
 
 def dict_factory(cursor, row):
@@ -83,12 +78,16 @@ def app_settings():
         return config
     elif request.method == 'POST':
         global global_config
-        global dir_q
+        global g_config_queue
         config = request.json
-        sf.writeConfigToJsonFile(config)
-        global_config = config
-        dir_q.put(global_config)
-        return jsonify({"status":"ok"})
+        error = sf.verify_config(config)
+        if error == "":
+            sf.writeConfigToJsonFile(config)
+            global_config = config
+            g_config_queue.put(global_config)
+            return jsonify({"status": "ok"})
+        else:
+            return jsonify({"status": error})
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -101,34 +100,31 @@ def api_filter():
 
     id = query_parameters.get('id')
     rand = query_parameters.get('random')
-    lang_temp = query_parameters.get('lang')
-    lang = ""
+    dict_db_temp = query_parameters.get('dict_db')
+    dict_db = ""
     i=-1
     all_dicts = getTablesInfo()
     for index, d in enumerate(all_dicts):
-        if d["table_name"] == lang_temp:
-            lang = lang_temp
+        if d["table_name"] == dict_db_temp:
+            dict_db = dict_db_temp
             i=index
-    if not (lang!= "" and (rand or id)):
+    if not (dict_db!= "" and (rand or id)):
         return page_not_found(404)
     
-    query = f"SELECT * FROM {lang} WHERE"
-    to_filter = []
+    query = f"SELECT * FROM {dict_db} WHERE"
 
     if rand=="true":
-        rand_id = random.randint(1, all_dicts[i]["size"])
-        query += ' id=? AND'
-        to_filter.append(str(rand_id))
+        # select * from DE_EN where rowid = (abs(random()) % (select (select max(rowid) from DE_EN)+1));
+        query += f' rowid=(abs(random()) % (select (select max(rowid) from {dict_db})+1)) AND'
     if id:
-        query += ' id=? AND'
-        to_filter.append(id)
+        query += f' id={id} AND'
 
     query = query[:-4] + ';'
 
     conn = sqlite3.connect('testdb.db')
     conn.row_factory = dict_factory
     cur = conn.cursor()
-    results = cur.execute(query, to_filter).fetchall()
+    results = cur.execute(query).fetchall()
 
     return jsonify(results)
 
@@ -137,13 +133,21 @@ if __name__ == "__main__":
     sf = SettingFile()
     global_config = sf.readConfigFile()
 
+    # Auth API
+    user = global_config["settings"]["API_username"]
+    password = global_config["settings"]["API_password"]
+    users = {
+        user: generate_password_hash(password),
+        "jerry": generate_password_hash("ThatisJerry")
+    }
+    encoded_u = base64.b64encode((user+":"+password).encode()).decode()
 
-    dir_q = queue.Queue()
-    dir_q.put(global_config)
-    notifierThead = NotifierThead(dir_q=dir_q)
+    # Prepare and run notifier in thread
+    g_config_queue = queue.Queue()
+    g_config_queue.put(global_config)
+    notifierThead = NotifierThead(g_config_queue, encoded_u)
     notifierThead.start()
-    # game = myGame(global_config)
-    # game.start()
+
     app.run(port=5000, host='127.0.0.1', debug=True, use_reloader=True)
 
 

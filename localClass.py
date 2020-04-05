@@ -1,4 +1,5 @@
 import os, time
+import random
 import threading, queue
 from handyfunctions import *
 from plyer import notification
@@ -6,83 +7,10 @@ from sys import platform
 import webbrowser
 # The other candidate for notification windows is https://github.com/malja/zroya
 import json
-
-class myGame(threading.Thread):
-    def __init__(self, global_config):
-        threading.Thread.__init__(self)
-        self.daemon = True
-        self.global_config = global_config
-
-    def run(self):
-        if platform == "linux" or platform == "linux2":
-            # linux
-            while True:
-                # print("----------------------game running----------------------")
-                time.sleep(5)
-                try:
-                    json_response = get_dict_with_param(lang="FR_DE")
-                    print(json_response)
-                    # time.sleep(10)
-                    notification.notify(
-                        title='id: {0}'.format(json_response[0]["id"]),
-                        message='content: {0}'.format(json_response[0]["line"]),
-                        app_name='wordNotify',
-                        # app_icon="beat_brick.ico",  # e.g. 'C:\\icon_32x32.ico'
-                        timeout=2,  # seconds
-                    )
-                except:
-                    print('error: notify')
-        elif platform == "darwin":
-            # OS X
-            while True:
-                # print("----------------------game running----------------------")
-                time.sleep(5)
-                try:
-                    json_response = get_dict_with_param(lang="FR_DE")
-                    print(json_response)
-                    # time.sleep(10)
-                    notification.notify(
-                        title='id: {0}'.format(json_response[0]["id"]),
-                        message='content: {0}'.format(json_response[0]["line"]),
-                        app_name='wordNotify',
-                        # app_icon="beat_brick.ico",  # e.g. 'C:\\icon_32x32.ico'
-                        timeout=2,  # seconds
-                    )
-                except:
-                    print('error: notify')
-
-        elif platform == "win32":
-            from win10toast import ToastNotifier
-            def open_browser_tab(url):
-                try:
-                    webbrowser.open(url, new=0)
-                except:
-                    print("error opening web")
-
-            toast = ToastNotifier()
-            while True:
-                print("----------------------game running----------------------")
-                print("interval:"+str(self.global_config["system_notification"]["interval_sec"]))
-                print("duration:"+str(self.global_config["system_notification"]["duration_sec"]))
-                time.sleep(self.global_config["system_notification"]["interval_sec"])
-                try:
-                    json_response, url_full = get_dict_with_param(lang="FR_DE")
-                    toast.show_toast(
-                        title='id: {0}'.format(json_response[0]["id"]),
-                        msg='content: {0}'.format(json_response[0]["line"]),
-                        icon_path=None,
-                        duration=self.global_config["system_notification"]["duration_sec"],
-                        threaded=False,
-                        callback_on_click=(lambda: open_browser_tab(get_dict_with_param(lang="FR_DE", id=json_response[0]["id"], url_only=True))))
-                except:
-                    print('error: creating toast notification')
-        pass
+from datetime import datetime
 
 class SettingFile():
     def __init__(self):
-        # self.isLocking = True
-        # with open('config.json', 'r') as f:
-        #     self.config = json.load(f)
         self.isLocking = False
 
     def parseConfig(self, config=None):
@@ -99,11 +27,6 @@ class SettingFile():
         self.isLocking = False
         return config
 
-    # def addOnlineSource(self, name, search_url, option=None):
-        # @param name Name of source
-        # @param search_url Using this search_url+word to search will return
-        # @param option Instruction for special condition, ...
-
     def writeConfigToJsonFile(self, config, filename="config.json"):
         if self.isLocking == True:
             return None
@@ -113,29 +36,29 @@ class SettingFile():
         self.isLocking = False
         return True
 
-# sf = SettingFile()
-# sf.parseConfig()
+    def verify_config(config):
+        # TODO: verify config with actual state of data. 
+        # (notification->dict_dbs_to_notify may not contain dict_db table in our database)
+        if True:
+            return ""
+        return "Verify failed. Check input."
 
 class NotifierThead(threading.Thread):
-    """ A worker thread that takes directory names from a queue, finds all
-        files in them recursively and reports the result.
 
-        Input is done by placing directory names (as strings) into the
-        Queue passed in dir_q.
-
-        Output is done by placing tuples into the Queue passed in result_q.
-        Each tuple is (thread name, dirname, [list of files]).
-
-        Ask the thread to stop by calling its join() method.
-    """
-    def __init__(self, dir_q):
+    def __init__(self, g_config_queue, encoded_u):
         super(NotifierThead, self).__init__()
         self.daemon = True
-        self.dir_q = dir_q
+        self.g_config_queue = g_config_queue
         self.stoprequest = threading.Event()
+        self.encoded_u = encoded_u
+    def open_browser_tab(url):
+        try:
+            webbrowser.open(url, new=0)
+        except:
+            print("error opening web")
 
     def run(self):
-        
+        last_show = datetime.now()
         if platform == "linux" or platform == "linux2":
             # linux
             while True:
@@ -175,40 +98,44 @@ class NotifierThead(threading.Thread):
                     print('error: notify')
 
         elif platform == "win32":
+            # Prevent error import on other platform
             from win10toast import ToastNotifier
-            def open_browser_tab(url):
-                try:
-                    webbrowser.open(url, new=0)
-                except:
-                    print("error opening web")
-
             toast = ToastNotifier()
+
             while not self.stoprequest.isSet():
+                # Fetching new config from queue. Dirty trick to communicate with main thread.
                 try:
-                    new_config = self.dir_q.get(True, 0.05)
+                    new_config = self.g_config_queue.get(True, 0.05)
                 except queue.Empty:
-                    print("no new config")
+                    # print("no new config")
+                    new_config = None
                     pass
                 if new_config:
                     self.global_config = new_config
-                    print("new interval_sec:"+str(self.global_config["system_notification"]["interval_sec"]))
-
-                print("----------------------game running----------------------")
-                print("interval:"+str(self.global_config["system_notification"]["interval_sec"]))
-                print("duration:"+str(self.global_config["system_notification"]["duration_sec"]))
-                time.sleep(self.global_config["system_notification"]["interval_sec"])
+                    # print("new interval_sec:"+str(self.global_config["system_notification"]["interval_sec"]))
+                # Compare escalated time with interval_sec
+                now = datetime.now()
+                if ((now-last_show).seconds < self.global_config["system_notification"]["interval_sec"]):
+                    time.sleep(1)
+                    continue
+                # Push notification
                 try:
-                    json_response, url_full = get_dict_with_param(lang="FR_DE")
+                    rand_dict_index = random.randint(
+                        0, len(self.global_config["notification"]["dict_dbs_to_notify"]))
+                    json_response, url_full = get_dict_with_param(
+                        self.encoded_u, dict_db=self.global_config["notification"]["dict_dbs_to_notify"][rand_dict_index])
+
                     toast.show_toast(
                         title='id: {0}'.format(json_response[0]["id"]),
                         msg='content: {0}'.format(json_response[0]["line"]),
                         icon_path=None,
                         duration=self.global_config["system_notification"]["duration_sec"],
                         threaded=False,
-                        callback_on_click=(lambda: open_browser_tab(get_dict_with_param(lang="FR_DE", id=json_response[0]["id"], url_only=True))))
+                        callback_on_click=(lambda: open_browser_tab(url_full)))
                 except:
                     print('error: creating toast notification')
-        pass
+                    # Update last notification time to "now"
+                last_show = now
 
     def join(self, timeout=None):
         self.stoprequest.set()

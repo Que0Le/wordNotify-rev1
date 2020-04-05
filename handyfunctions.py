@@ -11,10 +11,12 @@ headers = {'Content-Type': 'application/json',
 # response = requests.get('http://127.0.0.1:5000/api/v1/resources/dicts?lang=DE_EN&random=true', auth=HTTPBasicAuth('tom', 'thisIStom')).content.decode('utf-8')
 # json.loads(
 
-def get_dict_with_param(lang="DE_EN", id="", url_only=False):
+def get_dict_with_param(encoded_u, dict_db="DE_EN", id="", url_only=False):
     callsign = "&random=true" if id=="" else f"&id={id}"
-    url_full = f"{url_base}{get_dicts}lang={lang}{callsign}"
+    url_full = f"{url_base}{get_dicts}dict_db={dict_db}{callsign}"
     print(url_full)
+    headers = {'Content-Type': 'application/json',
+           "Authorization": "Basic %s" % encoded_u}
     response = requests.get(url_full, headers=headers)
     if url_only:
         return url_full
