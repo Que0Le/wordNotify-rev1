@@ -8,18 +8,22 @@ from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import random
-import time
 import threading
 import json
 import requests
 from handyfunctions import *
-from localapp import *
+from localClass import *
+import os, time
+import threading, queue
 
+# sf = SettingFile()
+# global global_config
+# global_config = sf.readConfigFile()
 
-game = myGame()
+# game = myGame()
 ############################
 app = flask.Flask(__name__)
-app.config["DEBUG"] = True
+# app.config["DEBUG"] = True
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 users = {
@@ -67,16 +71,28 @@ def available_dicts():
     conn = sqlite3.connect('testdb.db')
     conn.row_factory = dict_factory
     cur = conn.cursor()     
-    # all_dicts = cur.execute("SELECT name FROM sqlite_master WHERE type ='table' AND name NOT LIKE 'sqlite_%';").fetchall()
     all_dicts = cur.execute("SELECT * FROM ALL_DICTS;").fetchall()
-    # print(all_dicts)
-    # flat_list = [item for sublist in all_dicts for item in sublist]
     return jsonify(all_dicts)
+
+@app.route('/api/v1/resources/settings', methods=['GET', 'POST'])
+@auth.login_required
+def app_settings():
+    if request.method == 'GET':
+        config = sf.readConfigFile()
+        print(config)
+        return config
+    elif request.method == 'POST':
+        global global_config
+        global dir_q
+        config = request.json
+        sf.writeConfigToJsonFile(config)
+        global_config = config
+        dir_q.put(global_config)
+        return jsonify({"status":"ok"})
 
 @app.errorhandler(404)
 def page_not_found(e):
     return "<h1>404</h1><p>The resource could not be found.</p>", 404
-
 
 @app.route('/api/v1/resources/dicts', methods=['GET'])
 @auth.login_required
@@ -118,8 +134,17 @@ def api_filter():
 
 
 if __name__ == "__main__":
-    game.start()
-    app.run(port=5000, host='0.0.0.0', debug=True, use_reloader=True)
+    sf = SettingFile()
+    global_config = sf.readConfigFile()
+
+
+    dir_q = queue.Queue()
+    dir_q.put(global_config)
+    notifierThead = NotifierThead(dir_q=dir_q)
+    notifierThead.start()
+    # game = myGame(global_config)
+    # game.start()
+    app.run(port=5000, host='127.0.0.1', debug=True, use_reloader=True)
 
 
 # while True:

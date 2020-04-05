@@ -1,0 +1,44 @@
+{
+    "system_notification": {
+        "enable": true,
+        "audio": false,
+        "audio_file_on_notification": "",
+        "audio_on_notification": true,
+        "duration_sec": 2,
+        "interval_sec": 4,
+        "toast_notification": true
+    },
+    "web_notification": {
+        "enable": false,
+        "audio": false,
+        "audio_file_on_notification": "",
+        "audio_on_notification": true,
+        "duration_sec": 3,
+        "interval_sec": 10,
+        "toast_notification": true
+    },
+    "online_sources": [
+        {
+            "name": "Cambridge",
+            "search_url": [
+                {
+                    "lang": "DE_EN",
+                    "url": "https://dictionary.cambridge.org/dictionary/german-english/"
+                },
+                {
+                    "lang": "EN_DE",
+                    "url": "https://dictionary.cambridge.org/dictionary/english-german/"
+                }
+            ]
+        },
+        {
+            "name": "Wiktionary",
+            "search_url": [
+                {
+                    "lang": "EN_EN",
+                    "url": "https://en.wiktionary.org/wiki/"
+                }
+            ]
+        }
+    ]
+}
