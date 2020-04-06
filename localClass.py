@@ -8,6 +8,7 @@ import webbrowser
 # The other candidate for notification windows is https://github.com/malja/zroya
 import json
 from datetime import datetime
+import traceback
 
 class SettingFile():
     def __init__(self):
@@ -51,7 +52,7 @@ class NotifierThead(threading.Thread):
         self.g_config_queue = g_config_queue
         self.stoprequest = threading.Event()
         self.encoded_u = encoded_u
-    def open_browser_tab(url):
+    def open_browser_tab(self, url):
         try:
             webbrowser.open(url, new=0)
         except:
@@ -119,9 +120,10 @@ class NotifierThead(threading.Thread):
                     time.sleep(1)
                     continue
                 # Push notification
+                # TODO: Consider a while True here to prevent exception db busy (openned by other thread)
                 try:
                     rand_dict_index = random.randint(
-                        0, len(self.global_config["notification"]["dict_dbs_to_notify"]))
+                        0, len(self.global_config["notification"]["dict_dbs_to_notify"])-1)
                     json_response, url_full = get_dict_with_param(
                         self.encoded_u, dict_db=self.global_config["notification"]["dict_dbs_to_notify"][rand_dict_index])
 
@@ -131,8 +133,9 @@ class NotifierThead(threading.Thread):
                         icon_path=None,
                         duration=self.global_config["system_notification"]["duration_sec"],
                         threaded=False,
-                        callback_on_click=(lambda: open_browser_tab(url_full)))
-                except:
+                        callback_on_click=(lambda: self.open_browser_tab(url_full)))
+                except Exception:
+                    traceback.print_exc()
                     print('error: creating toast notification')
                     # Update last notification time to "now"
                 last_show = now

@@ -5,7 +5,7 @@
         "audio_file_on_notification": "",
         "audio_on_notification": true,
         "duration_sec": 2,
-        "interval_sec": 15,
+        "interval_sec": 7,
         "toast_notification": true
     },
     "web_notification": {
@@ -27,7 +27,9 @@
     "settings": {
         "API_username": "tom",
         "API_password": "thisIStom",
-        "NotifierThead_sleep_iterator_sec": 5
+        "NotifierThead_sleep_iterator_sec": 5,
+        "debug": true,
+        "user_reloader": true
     },
     "online_sources": [
         {

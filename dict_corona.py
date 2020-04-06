@@ -128,14 +128,14 @@ def api_filter():
 
     return jsonify(results)
 
-@app.route('/api/v1/resources/dict_db/<dict_db_name>', methods=['GET', 'POST'])
-@auth.login_required
-def dict_db_handler(dict_db_name):
-    if request.method == 'GET':
-        config = sf.readConfigFile()
-        print(config)
-        return config
-    elif request.method == 'POST':
+# @app.route('/api/v1/resources/dict_db/<dict_db_name>', methods=['GET', 'POST'])
+# @auth.login_required
+# def dict_db_handler(dict_db_name):
+#     if request.method == 'GET':
+#         config = sf.readConfigFile()
+#         print(config)
+#         return config
+#     elif request.method == 'POST':
 
 if __name__ == "__main__":
     sf = SettingFile()
@@ -151,12 +151,14 @@ if __name__ == "__main__":
     encoded_u = base64.b64encode((user+":"+password).encode()).decode()
 
     # Prepare and run notifier in thread
-    g_config_queue = queue.Queue()
-    g_config_queue.put(global_config)
-    notifierThead = NotifierThead(g_config_queue, encoded_u)
-    notifierThead.start()
+    if global_config["system_notification"]["enable"] == True:
+        g_config_queue = queue.Queue()
+        g_config_queue.put(global_config)
+        notifierThead = NotifierThead(g_config_queue, encoded_u)
+        notifierThead.start()
 
-    app.run(port=5000, host='127.0.0.1', debug=True, use_reloader=True)
+    app.run(port=5000, host='127.0.0.1', debug=global_config["settings"]["debug"],
+                use_reloader=global_config["settings"]["user_reloader"])
 
 
 # while True:
