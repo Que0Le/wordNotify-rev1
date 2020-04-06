@@ -128,6 +128,14 @@ def api_filter():
 
     return jsonify(results)
 
+@app.route('/api/v1/resources/dict_db/<dict_db_name>', methods=['GET', 'POST'])
+@auth.login_required
+def dict_db_handler(dict_db_name):
+    if request.method == 'GET':
+        config = sf.readConfigFile()
+        print(config)
+        return config
+    elif request.method == 'POST':
 
 if __name__ == "__main__":
     sf = SettingFile()

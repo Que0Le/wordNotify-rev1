@@ -14,7 +14,8 @@
   
   Basic auth:
   ```javascript
-  xhr.setRequestHeader("Authorization", "Basic " + btoa("user" + ":" + "password"))```
+  xhr.setRequestHeader("Authorization", "Basic " + btoa("user" + ":" + "password"))
+  ```
 * **GET Response:**
 
   * **Code:** 200 <br />
@@ -35,7 +36,7 @@
 
   ```javascript
     const xhr = new XMLHttpRequest();
-        const url = `http://127.0.0.1:5000//api/v1/resources/settings`
+        const url = `http://127.0.0.1:5000/api/v1/resources/settings`
         xhr.open("GET", url);
         xhr.setRequestHeader("Authorization", "Basic " + btoa("user" + ":" + "password"))
         xhr.timeout = 2000
