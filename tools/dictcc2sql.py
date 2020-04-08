@@ -9,7 +9,7 @@ persons = [
 
 # con = sqlite3.connect(":memory:")
 con = sqlite3.connect("testdb.db")
-con.execute(f"""CREATE TABLE IF NOT EXISTS ALL_DICTS(table_name text NOT NULL, size integer)""")
+con.execute(f"CREATE TABLE IF NOT EXISTS ALL_DICTS(table_name text NOT NULL, size integer)")
 
 # Create the table
 # con.execute("""CREATE TABLE IF NOT EXISTS projects (id integer PRIMARY KEY AUTOINCREMENT, line text NOT NULL)""")
@@ -31,7 +31,8 @@ for file_path in x:
     print(f"working on {file_path}...")
     with open(file_path, "r", encoding='utf8') as f:
         table_name = f.readline().split(" ")[1].replace("-", "_")
-        con.execute(f"""CREATE TABLE IF NOT EXISTS {table_name}(id integer PRIMARY KEY AUTOINCREMENT, line text NOT NULL)""")
+        con.execute(f"CREATE TABLE IF NOT EXISTS {table_name}(id integer PRIMARY KEY AUTOINCREMENT, line text NOT NULL)")
+        con.commit()
         print(f"created table {table_name}")
     querry = f"insert into {table_name}(id, line) values (?,?)"
     i = 1
