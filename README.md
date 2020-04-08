@@ -11,14 +11,14 @@ pip install -e .
 # We need now:
 python3 -m pip install flask flask_httpauth flask_cors
 python3 -m pip install requests
-python3 -m pip install git+http://github.com/kivy/pyobjus/ --user
+# python3 -m pip install git+http://github.com/kivy/pyobjus/ --user
 # python3 -m pip install dbus-python
 
 # For notification. Consider only use notify-send:y
-sudo apt-get install python3-dev
-sudo apt-get install libcairo2-dev libjpeg-dev libgif-dev
-sudo apt-get --reinstall install libnotify-bin notify-osd
-python3 -m pip install notify-send
+# sudo apt-get install python3-dev
+# sudo apt-get install libcairo2-dev libjpeg-dev libgif-dev
+# sudo apt-get --reinstall install libnotify-bin notify-osd
+# python3 -m pip install notify-send
 python3 -m pip install plyer
 
 # Create DB
