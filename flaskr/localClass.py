@@ -118,7 +118,7 @@ class NotifierThead(threading.Thread):
         with self.app.app_context():
             while not self.stoprequest.isSet(): 
                 last_show = datetime.now()
-                if platform == "linux" or platform == "linux2":
+                if platform == "linux":
                     # linux
                     from plyer import notification
                     while not self.stoprequest.isSet():
@@ -150,24 +150,42 @@ class NotifierThead(threading.Thread):
                         # Update last notification time to "now"
                         last_show = now
 
-                # elif platform == "darwin":
-                #     # OS X
-                #     while True:
-                #         # print("----------------------game running----------------------")
-                #         time.sleep(5)
-                #         try:
-                #             json_response = get_dict_with_param(lang="FR_DE")
-                #             print(json_response)
-                #             # time.sleep(10)
-                #             notification.notify(
-                #                 title='id: {0}'.format(json_response[0]["id"]),
-                #                 message='content: {0}'.format(json_response[0]["line"]),
-                #                 app_name='wordNotify',
-                #                 # app_icon="beat_brick.ico",  # e.g. 'C:\\icon_32x32.ico'
-                #                 timeout=2,  # seconds
-                #             )
-                #         except:
-                #             print('error: notify')
+                if platform == "darwin":
+                    while not self.stoprequest.isSet():
+                        global_config = current_app.config["GLOBAL_CONFIG"]
+                        notify_methods = global_config["system_notification"]["methods"]["macos"]
+
+                        now = datetime.now()
+                        if ((now-last_show).seconds < global_config["system_notification"]["interval_sec"]):
+                            time.sleep(1)
+                            continue
+                        # Push notification
+                        # TODO: Consider a while True here to prevent exception db busy (openned by other thread)
+                        try:
+                            rand_dict_index = random.randint(
+                                0, len(global_config["notification"]["dict_dbs_to_notify"])-1)
+                            json_response, url_full = handyfunctions.get_dict_with_param(
+                                encoded_u=current_app.config["ENCODED_U"], 
+                                dict_db=global_config["notification"]["dict_dbs_to_notify"][rand_dict_index])
+                            
+                            if notify_methods["terminal-notifier"]:
+                                os.system("""
+                                terminal-notifier -title '{}' -message '{}' -open '{}'
+                                """.format(json_response[0]["id"], json_response[0]["line"], url_full))
+                            elif notify_methods["plyer"]:
+                                from plyer import notification
+                                notification.notify(
+                                    title='id: {0}'.format(json_response[0]["id"]),
+                                    message='content: {0}'.format(json_response[0]["line"]),
+                                    app_name='wordNotify',
+                                    # app_icon="beat_brick.ico",  # e.g. 'C:\\icon_32x32.ico'
+                                    timeout=global_config["system_notification"]["duration_sec"],
+                                )
+                        except Exception:
+                            traceback.print_exc()
+                            print('error: creating macos notification')
+                        # Update last notification time to "now"
+                        last_show = now
 
                 elif platform == "win32":
                     # Prevent error import on other platform

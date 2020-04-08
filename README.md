@@ -104,20 +104,46 @@ flask run --no-reload --host=0.0.0.0
 # http://localhost:5000/api/v1/resources/dicts?dict_db=DE_FR&random=true
 ```
 
+
+# Setup for macOS
+``` bash
+# venv
+python3 -m venv venv
+. venv/bin/activate
+# Flask
+pip install -e .
+
+# Dependencies. TODO: add those packages to setup.cfg
+# We need now:
+python3 -m pip install flask flask_httpauth flask_cors
+python3 -m pip install Cython
+python3 -m pip install git+http://github.com/kivy/pyobjus/ #--user #macos
+
+# terminal-notifier offer much better features. default choice...
+brew install terminal-notifier
+# ... OR crossplatform plyer. Set in config.json.
+python3 -m pip install plyer
+
+# Create DB
+cd tools/
+python3 dictcc2sql.py
+
+# Run this once
+chmod +x start_flask.sh
+
+# From now to start server:
+./start_flask.sh
+
+# Testing url
+# http://localhost:5000/
+# http://localhost:5000/api/v1/resources/settings
+# http://localhost:5000/api/v1/resources/dicts?dict_db=DE_FR&random=true
+```
+
+
 ---------------------------------------------
 <br>
 # DONT TOUCH THIS
-
-
-``` bash
-python3 -m pip install flask flask_httpauth flask_cors
-python3 -m pip install Cython
-python3 -m pip install git+http://github.com/kivy/pyobjus/ --user #macos
-python3 -m pip install plyer
-python3 -m pip install dbus-python
-python -m pip install git+https://github.com/Charnelx/Windows-10-Toast-Notifications # this add call back on clicking notification
-```
-
 
 ``` bash
 # packging

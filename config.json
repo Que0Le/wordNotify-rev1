@@ -6,7 +6,19 @@
         "audio_on_notification": true,
         "duration_sec": 2,
         "interval_sec": 7,
-        "toast_notification": true
+        "toast_notification": true,
+        "methods": {
+            "windows": {
+                "win10toast": true
+            },
+            "linux": {
+                "plyer": true
+            },
+            "macos": {
+                "terminal-notifier": true,
+                "plyer": false
+            }
+        }
     },
     "web_notification": {
         "enable": false,
