@@ -24,7 +24,7 @@ def filebrowser(parents="", ext=""):
     "Returns files with an extension"
     return [f for f in glob.glob(f"{parents}*{ext}")]
 
-x = filebrowser("dicts/", ".txt")
+x = filebrowser("../dicts/", ".txt")
 print(x)
 
 for file_path in x:
