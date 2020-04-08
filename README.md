@@ -5,6 +5,7 @@ apt-get install python3-venv
 python3 -m venv venv
 . venv/bin/activate
 # Flask
+# Make sure to be in this projects root
 pip install -e .
 
 # Dependencies. TODO: add those packages to setup.cfg
@@ -26,6 +27,7 @@ cd tools/
 python3 dictcc2sql.py
 
 # Run this once
+cd ..
 chmod +x start_flask.sh
 
 # From now to start server:
@@ -45,7 +47,7 @@ python -m venv venv
 venv\Scripts\activate.bat
 # 'deactivate' to exit venv
 
-# venv\Scripts\activate.bat not work anymore with Windows PowerShell 
+# venv\Scripts\activate.bat not work anymore with Windows PowerShell
 # Consider also 'Set-ExecutionPolicy Unrestricted -Force' if this line doesnt work
 # venv\Scripts\activate.ps1
 
