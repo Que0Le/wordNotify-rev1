@@ -1,0 +1,34 @@
+<template>
+  <h1>${message}</h1>
+
+  <!-- Source Settings -->
+  <h3>Source Settings</h3>
+  <div class="sourceSettingsContainer">
+    <label repeat.for="sourceSetting of sourceSettings">
+      <input
+        type="radio"
+        model.bind="sourceSetting"
+        checked.bind="selectedSourceSetting"
+      >
+      ${sourceSetting.name} - ${sourceSetting.link}
+    </label>
+
+    Selected sourceSetting: ${selectedSourceSetting.name} - ${selectedSourceSetting.link}
+  </div>
+
+  <!-- Notification Settings -->
+  <h3>Notification Settings</h3>
+  <!-- Interval -->
+  <label>
+    Interval (s)
+    <input type="number">
+  </label>
+
+  <br>
+
+  <!-- Duration -->
+  <label>
+    Duration (s)
+    <input type="number">
+  </label>
+</template>
