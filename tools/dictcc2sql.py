@@ -8,7 +8,7 @@ persons = [
 ]
 
 # con = sqlite3.connect(":memory:")
-con = sqlite3.connect("testdb.db")
+con = sqlite3.connect("../testdb.db")
 con.execute(f"CREATE TABLE IF NOT EXISTS ALL_DICTS(table_name text NOT NULL, size integer)")
 
 # Create the table
