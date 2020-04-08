@@ -4,15 +4,13 @@ from flask import Flask
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash
 from flaskr import handyfunctions
+from flaskr import localClass
 
 # global_config = None
 def create_app(test_config=None):
     """Create and configure an instance of the Flask application."""
     # Load config from config.json
-    from flaskr import localClass
     sf = localClass.SettingFile()
-    # global_config = sf.readConfigFile()
-    # print(global_config)
 
     app = Flask(__name__, instance_relative_config=True)
 
@@ -21,14 +19,6 @@ def create_app(test_config=None):
     if error != "":
         # TODO: improve return code
         return None
-
-    # user = global_config["settings"]["API_username"]
-    # password = global_config["settings"]["API_password"]
-    # users = {
-    #     user: generate_password_hash(password),
-    #     "jerry": generate_password_hash("ThatisJerry")
-    # }
-    # encoded_u = base64.b64encode((user+":"+password).encode()).decode()
 
     app.config.from_mapping(
         # a default secret that should be overridden by instance config
@@ -39,15 +29,14 @@ def create_app(test_config=None):
         GLOBAL_CONFIG=global_config,
         GLOBAL_SF=sf,
         THREAD_STARTED=0,
-        # USERS=users,
-        # ENCODED_U=encoded_u,
     )
+
     cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
     cors = CORS(app, resources={r"/": {"origins": "*"}})
 
-    handyfunctions.update_config(global_config, app)
-    # print(app.config)
-    if app.config['THREAD_STARTED'] == 0:
+    handyfunctions.update_config(app, global_config)
+    if app.config['THREAD_STARTED'] == 0 :#\
+            # and app.config["GLOBAL_CONFIG"]["system_notification"]["enable"]:
         thread = localClass.NotifierThead(app)
         thread.start()
         print("started thread!")

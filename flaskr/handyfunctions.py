@@ -1,5 +1,5 @@
-import base64
-import json
+import base64, json
+
 import requests
 from werkzeug.security import generate_password_hash
 
@@ -27,7 +27,7 @@ def get_dict_with_param(encoded_u, dict_db="DE_EN", id="", url_only=False):
     else:
         return None
 
-def update_config(new_config, app):
+def update_config(app, new_config):
     app.config["GLOBAL_CONFIG"] = new_config
     user = new_config["settings"]["API_username"]
     password = new_config["settings"]["API_password"]

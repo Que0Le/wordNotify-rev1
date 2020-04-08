@@ -84,7 +84,7 @@ def app_settings():
         error = current_app.config["GLOBAL_SF"].verify_config(new_config)
         if error == "":
             current_app.config["GLOBAL_SF"].writeConfigToJsonFile(new_config)
-            handyfunctions.update_config(new_config, current_app)
+            handyfunctions.update_config(current_app, new_config)
             return jsonify({"status": "ok"})
         else:
             return jsonify({"status": error})
