@@ -1,0 +1,58 @@
+{
+    "system_notification": {
+        "enable": true,
+        "audio": false,
+        "audio_file_on_notification": "",
+        "audio_on_notification": true,
+        "duration_sec": 2,
+        "interval_sec": 7,
+        "toast_notification": true
+    },
+    "web_notification": {
+        "enable": false,
+        "audio": false,
+        "audio_file_on_notification": "",
+        "audio_on_notification": true,
+        "duration_sec": 3,
+        "interval_sec": 10,
+        "toast_notification": true
+    },
+    "notification": {
+        "dict_dbs_to_notify": [
+            "EN_DE",
+            "DE_EN",
+            "FR_EN"
+        ]
+    },
+    "settings": {
+        "API_username": "tom",
+        "API_password": "thisIStom",
+        "NotifierThead_sleep_iterator_sec": 5,
+        "debug": true,
+        "user_reloader": true
+    },
+    "online_sources": [
+        {
+            "name": "Cambridge",
+            "search_url": [
+                {
+                    "lang": "DE_EN",
+                    "url": "https://dictionary.cambridge.org/dictionary/german-english/"
+                },
+                {
+                    "lang": "EN_DE",
+                    "url": "https://dictionary.cambridge.org/dictionary/english-german/"
+                }
+            ]
+        },
+        {
+            "name": "Wiktionary",
+            "search_url": [
+                {
+                    "lang": "EN_EN",
+                    "url": "https://en.wiktionary.org/wiki/"
+                }
+            ]
+        }
+    ]
+}
