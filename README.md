@@ -37,6 +37,43 @@ chmod +x start_flask.sh
 # http://localhost:5000/api/v1/resources/dicts?dict_db=DE_FR&random=true
 ```
 
+# Setup for Windows 10: DO NOT USE POWERSHELL!!! USE CMD!
+``` bash
+# Official guide: https://flask.palletsprojects.com/en/1.1.x/cli/#application-discovery
+python -m venv venv
+# CMD ONLY:
+venv\Scripts\activate.bat
+# 'deactivate' to exit venv
+
+# venv\Scripts\activate.bat not work anymore with Windows PowerShell 
+# Consider also 'Set-ExecutionPolicy Unrestricted -Force' if this line doesnt work
+# venv\Scripts\activate.ps1
+
+pip install -e .
+
+python -m pip install flask flask_httpauth flask_cors
+python -m pip install requests
+python -m pip install git+https://github.com/Charnelx/Windows-10-Toast-Notifications
+
+# Create DB
+cd tools/
+python dictcc2sql.py
+
+# Register env
+set FLASK_APP=flaskr
+set FLASK_ENV=development
+set FLASK_DEBUG=0
+flask init-db
+
+# From now run:
+flask run --no-reload --host=0.0.0.0
+
+# Testing url
+# http://localhost:5000/
+# http://localhost:5000/api/v1/resources/settings
+# http://localhost:5000/api/v1/resources/dicts?dict_db=DE_FR&random=true
+```
+
 # Setup for Windows 7
 ``` bash
 python -m venv venv
@@ -47,6 +84,10 @@ pip install -e .
 python -m pip install flask flask_httpauth flask_cors
 python -m pip install requests
 python -m pip install git+https://github.com/Charnelx/Windows-10-Toast-Notifications
+
+# Create DB
+cd tools/
+python dictcc2sql.py
 
 # Register env
 set FLASK_APP=flaskr
