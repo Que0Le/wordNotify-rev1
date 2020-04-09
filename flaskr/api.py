@@ -91,7 +91,7 @@ def app_settings():
             return jsonify({"status": error})
 
 
-@bp.route('/api/v1/resources/dicts', methods=['GET', 'POST'])
+@bp.route('/api/v1/resources/dicts', methods=['GET', 'POST', 'PUT', 'DELETE'])
 @auth.login_required
 def api_filter():
     query_parameters = request.args
@@ -126,6 +126,7 @@ def api_filter():
         # Payload mode
         ###############
         db = get_db()
+        ########################################## GET
         if request.method == 'GET':
             r_dicts = request.json
             response = []
@@ -206,8 +207,124 @@ def api_filter():
                 }
                 response.append(response_for_single_dict)
             return jsonify(response)
+        ########################################## POST
         elif request.method == 'POST':
-            return jsonify({"status": "ok"})
+            # DE_EN
+            req_dicts = request.json
+            response = []
+            for req_dict in req_dicts:
+                dict_db = req_dict["dict_db"]
+                data = req_dict["data"]
+                posted_words = []
+                error_trans = []
+                for word in data:
+                    try:
+                        db.execute(f"insert into {dict_db}( \
+                            id, line, note, description, date_created, last_modified \
+                            ) values (?,?,?,?,?,?)", (
+                                None, word["line"], word["note"], word["description"], 
+                                word["date_created"], word["last_modified"])
+                            )
+                        db.commit()
+                        posted_words.append(word)
+                    except:
+                        error_trans.append(word)
+                        print(traceback.format_exc())
+                response.append({
+                    "dict_db": dict_db, "posted_words": posted_words, "error_trans": error_trans
+                    })
+            return jsonify(response)
+
+
+            # req_dicts = request.json
+            # for req_dict in req_dicts:
+            #     dict_db = req_dict["dict_db"]
+            #     data = req_dict["data"]
+
+            #     querry = f"insert into {dict_db}( \
+            #         id, line, note, description, date_created, last_modified \
+            #         ) values (?,?,?,?,?,?)"
+            #     i = 1
+            #     data_array = []
+            #     try:
+            #         for word in data:
+            #             data_array.append(
+            #                 (None, word["line"], word["note"], word["description"], 
+            #                 word["date_created"], word["last_modified"]))
+            #             if i%10000 == 0:
+            #                 db.executemany(querry, data_array)
+            #                 db.commit()
+            #                 data_array.clear()
+            #             i+=1
+            #         db.executemany(querry, data_array)
+            #         db.commit()
+            #     except:
+            #         print(traceback.format_exc())
+            #         return jsonify({"status": "Error POST: writing to DB"})
+            # return jsonify({"status": "ok"})
+        ########################################## POST
+        elif request.method == 'PUT':
+            # DE_EN
+            req_dicts = request.json
+            print(req_dicts)
+            response = []
+            for req_dict in req_dicts:
+                dict_db = req_dict["dict_db"]
+                data = req_dict["data"]
+                updated_words = []
+                error_trans = []
+                for word in data:
+                    try:
+                        db.execute(f"""update {dict_db} \
+                            set line=?, note=?, description=?, date_created=?, last_modified=? \
+                            where id=?
+                            """, (
+                                word["line"], word["note"], word["description"], 
+                                word["date_created"], word["last_modified"], word["id"])
+                        )
+                        db.commit()
+                        updated_words.append(word)
+                    except:
+                        error_trans.append(word)
+                        print(traceback.format_exc())
+                response.append({
+                    "dict_db": dict_db, "updated_words": updated_words, "error_trans": error_trans
+                    })
+            return jsonify(response)
+        ########################################## DELETE
+        elif request.method == 'DELETE':
+            # DE_EN
+            req_dicts = request.json
+            response = []
+            for req_dict in req_dicts:
+                dict_db = req_dict["dict_db"]
+                ids = req_dict["ids"]
+                deleted_words = []
+                error_trans = []
+                for id_single in ids:
+                    try:
+                        db.execute(f"""delete from {dict_db} where \
+                            id={id_single}""")
+                        db.commit()
+                        deleted_words.append(id_single)
+                    except:
+                        error_trans.append(id_single)
+                        print(traceback.format_exc())
+                response.append({
+                    "dict_db": dict_db, "deleted_words": deleted_words, "error_trans": error_trans
+                    })
+            return jsonify(response)
+            # req_dicts = request.json
+            # for req_dict in req_dicts:
+            #     dict_db = req_dict["dict_db"]
+            #     ids = req_dict["ids"]
+            #     try:
+            #         db.execute(f"""delete from {dict_db} where \
+            #             id in ({tuple(ids)})""")
+            #     except:
+            #         print(traceback.format_exc())
+            #         return jsonify({"status": "Error POST: writing to DB"})
+            # return jsonify({"status": "ok"})
 
 
 

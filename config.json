@@ -1,6 +1,6 @@
 {
     "system_notification": {
-        "enable": true,
+        "enable": false,
         "audio": false,
         "audio_file_on_notification": "",
         "audio_on_notification": true,
