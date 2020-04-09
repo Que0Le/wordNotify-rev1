@@ -41,7 +41,8 @@
         "API_password": "thisIStom",
         "NotifierThead_sleep_iterator_sec": 5,
         "debug": true,
-        "user_reloader": true
+        "user_reloader": true,
+        "db_file": "testdb_2.db"
     },
     "online_sources": [
         {

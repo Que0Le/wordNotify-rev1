@@ -25,7 +25,7 @@ def create_app(test_config=None):
         SECRET_KEY="dev",
         # store the database in the instance folder
         # DATABASE=os.path.join(app.instance_path, "testdb.db"),
-        DATABASE="testdb.db",
+        DATABASE=global_config["settings"]["db_file"],
         GLOBAL_CONFIG=global_config,
         GLOBAL_SF=sf,
         THREAD_STARTED=0,

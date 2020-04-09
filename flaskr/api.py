@@ -7,11 +7,12 @@ from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import random
-import threading
 import json
 import requests
 import os, time
 import threading, queue
+import re
+import itertools
 from flask import Blueprint
 from flask import flash
 from flask import g
@@ -90,35 +91,126 @@ def app_settings():
             return jsonify({"status": error})
 
 
-@bp.route('/api/v1/resources/dicts', methods=['GET'])
+@bp.route('/api/v1/resources/dicts', methods=['GET', 'POST'])
 @auth.login_required
 def api_filter():
     query_parameters = request.args
 
-    id = query_parameters.get('id')
-    rand = query_parameters.get('random')
     dict_db = query_parameters.get('dict_db')
+    if dict_db:
+        # url mode http://127.0.0.1:5000/api/v1/resources/dicts?dict_db=DE_FR&random=true
+        id = query_parameters.get('id')
+        rand = query_parameters.get('random')
+        if not (dict_db!= "" and (rand or id)):
+            return page_not_found(404)
 
-    if not (dict_db!= "" and (rand or id)):
-        return page_not_found(404)
-    
-    query = f"SELECT * FROM {dict_db} WHERE"
+        if request.method == 'GET':
+            query = f"SELECT * FROM {dict_db} WHERE"
 
-    if rand=="true":
-        # select * from DE_EN where rowid = (abs(random()) % (select (select max(rowid) from DE_EN)+1));
-        query += f' rowid=(abs(random()) % (select (select max(rowid) from {dict_db})+1)) AND'
-    if id:
-        query += f' id={id} AND'
+            if rand=="true":
+                # select * from DE_EN where rowid = (abs(random()) % (select (select max(rowid) from DE_EN)+1));
+                query += f' rowid=(abs(random()) % (select (select max(rowid) from {dict_db})+1)) AND'
+            if id:
+                query += f' id={id} AND'
 
-    query = query[:-4] + ';'
+            query = query[:-4] + ';'
 
-    db = get_db()
-    try:
-        result = db.execute(query).fetchall()
-        return jsonify(result)
-    except Exception:
-        print(traceback.format_exc())
-        return page_not_found(404)
+            db = get_db()
+            try:
+                result = db.execute(query).fetchall()
+                return jsonify(result)
+            except Exception:
+                print(traceback.format_exc())
+                return page_not_found(404)
+    else:
+        # Payload mode
+        ###############
+        db = get_db()
+        if request.method == 'GET':
+            r_dicts = request.json
+            response = []
+            for r_dict in r_dicts:
+                # DE_EN
+                dict_db = r_dict["dict_db"]
+                option = r_dict["option"]
+                ids = r_dict["ids"]
+                id_ranges = r_dict["id_ranges"]
+                id_random = r_dict["id_random"]
+                response_ids = []
+                response_ranges = {}
+                response_random = []
+                response_all = []
+                if option=="all":
+                    try:
+                        response_all = db.execute(f"""\
+                            SELECT * FROM {r_dict["dict_db"]} WHERE true;\
+                            """).fetchall()
+                    except:
+                        print(traceback.format_exc())
+                # Get words with ids
+                try:
+                    place_holders = ', '.join(['?']*len(ids)) # ','.join(map(str, ids))
+                    response_ids = db.execute(f"""\
+                        SELECT * FROM {r_dict["dict_db"]} WHERE \
+                        id in ({place_holders}); \
+                        """, tuple(ids)).fetchall()
+                except Exception:
+                    print(traceback.format_exc())
+                # Get word has id in range defined in id_ranges. 
+                try:
+                    for range_id_string in id_ranges:
+                        temp = re.findall(r"([0-9]+)-([0-9]+)", range_id_string)
+                        if len(temp) == 0:
+                            continue
+                        (top, bot) = temp[0]
+                        r = db.execute(f"""\
+                            SELECT * FROM {r_dict["dict_db"]} WHERE \
+                            id between {int(top)} and {int(bot)}; \
+                            """).fetchall()
+                        response_ranges[range_id_string] = r
+                except Exception:
+                    print(traceback.format_exc())
+                # Get id_random random rows
+                try:
+                    maxrow = db.execute("select max(rowid) from DE_EN;").fetchone()["max(rowid)"]
+                    where_statement = ""
+                    if maxrow>id_random:
+                        # generate some random ids
+                        def random_gen(low, high):
+                            while True:
+                                yield random.randrange(low, high)
+                        gen = random_gen(1, maxrow)
+                        temp_ids = set()
+                        for x in itertools.takewhile(lambda x: len(temp_ids) < id_random, gen):
+                            temp_ids.add(x)
+                        # 
+                        place_holders = ', '.join(['?']*id_random)
+                        response_random = db.execute(f"""\
+                            SELECT * FROM {r_dict["dict_db"]} WHERE \
+                            id in ({place_holders}); \
+                            """, tuple(temp_ids)).fetchall()
+                    else:
+                        response_random = db.execute(f"""\
+                            SELECT * FROM {r_dict["dict_db"]} WHERE true\
+                            """).fetchall()
+                except Exception:
+                    print(traceback.format_exc())
+                ####
+                #### Construct part of response message
+                response_for_single_dict = {
+                    "dict_db": dict_db,
+                    "ids": response_ids,
+                    "id_ranges": response_ranges,
+                    "id_random": response_random,
+                    "all": response_all
+                }
+                response.append(response_for_single_dict)
+            return jsonify(response)
+        elif request.method == 'POST':
+            return jsonify({"status": "ok"})
+
+
+
 
 # @bp.route('/api/v1/resources/dict_db/<dict_db_name>', methods=['GET', 'POST'])
 # @auth.login_required
