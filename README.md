@@ -24,7 +24,7 @@ python3 -m pip install plyer
 
 # Create DB
 cd tools/
-python3 dictcc2sql.py
+python3 dictcc2sql_2.py
 
 # Run this once
 cd ..
@@ -59,8 +59,9 @@ python -m pip install git+https://github.com/Charnelx/Windows-10-Toast-Notificat
 
 # Create DB
 cd tools/
-python dictcc2sql.py
+python dictcc2sql_2.py
 
+cd ..
 # Register env
 set FLASK_APP=flaskr
 set FLASK_ENV=development
@@ -89,8 +90,9 @@ python -m pip install git+https://github.com/Charnelx/Windows-10-Toast-Notificat
 
 # Create DB
 cd tools/
-python dictcc2sql.py
+python dictcc2sql_2.py
 
+cd ..
 # Register env
 set FLASK_APP=flaskr
 set FLASK_ENV=development
@@ -128,8 +130,9 @@ python3 -m pip install plyer
 
 # Create DB
 cd tools/
-python3 dictcc2sql.py
+python3 dictcc2sql_2.py
 
+cd ..
 # Run this once
 chmod +x start_flask.sh
 
