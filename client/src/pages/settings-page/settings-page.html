@@ -1,43 +1,12 @@
 <template>
-  <h1>${message}</h1>
+  <require from='../../common/components/json-tree/json-tree'></require>
 
-  <!-- Source Settings -->
-  <!-- TODO: How should this work -->
-  <!-- <h3>Source Settings</h3>
-  <div class="sourceSettingsContainer">
-    <label repeat.for="sourceSetting of sourceSettings">
-      <input
-        type="radio"
-        model.bind="sourceSetting"
-        checked.bind="selectedSourceSetting"
-      >
-      ${sourceSetting.name} - ${sourceSetting.search_url}
-    </label>
-
-    Selected sourceSetting: ${selectedSourceSetting.name} - ${selectedSourceSetting.search_url}
-  </div> -->
-
-  <!-- Notification Settings -->
-  <h3>Notification Settings</h3>
-  <!-- Interval -->
-  <label>
-    Config: online_sources -> duration_sec (s)
-    <input
-      type="number"
-      value.bind="vocabConfig.system_notification.duration_sec"
-    >
-  </label>
-
-  <br>
-
-  <!-- Duration -->
-  <label>
-    Config: online_sources -> interval_sec (s)
-    <input
-      type="number"
-      value.bind="vocabConfig.system_notification.interval_sec"
-    >
-  </label>
+  <template if.bind="vocabConfig">
+    <json-tree
+      json-data.bind="vocabConfig"
+      json-editor.two-way="jsonEditor"
+    ></json-tree>
+  </template>
 
   <br>
 
