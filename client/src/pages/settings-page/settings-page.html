@@ -2,7 +2,8 @@
   <h1>${message}</h1>
 
   <!-- Source Settings -->
-  <h3>Source Settings</h3>
+  <!-- TODO: How should this work -->
+  <!-- <h3>Source Settings</h3>
   <div class="sourceSettingsContainer">
     <label repeat.for="sourceSetting of sourceSettings">
       <input
@@ -10,25 +11,37 @@
         model.bind="sourceSetting"
         checked.bind="selectedSourceSetting"
       >
-      ${sourceSetting.name} - ${sourceSetting.link}
+      ${sourceSetting.name} - ${sourceSetting.search_url}
     </label>
 
-    Selected sourceSetting: ${selectedSourceSetting.name} - ${selectedSourceSetting.link}
-  </div>
+    Selected sourceSetting: ${selectedSourceSetting.name} - ${selectedSourceSetting.search_url}
+  </div> -->
 
   <!-- Notification Settings -->
   <h3>Notification Settings</h3>
   <!-- Interval -->
   <label>
-    Interval (s)
-    <input type="number">
+    Config: online_sources -> duration_sec (s)
+    <input
+      type="number"
+      value.bind="vocabConfig.system_notification.duration_sec"
+    >
   </label>
 
   <br>
 
   <!-- Duration -->
   <label>
-    Duration (s)
-    <input type="number">
+    Config: online_sources -> interval_sec (s)
+    <input
+      type="number"
+      value.bind="vocabConfig.system_notification.interval_sec"
+    >
   </label>
+
+  <br>
+
+  <button click.delegate="saveSettings()">Save Settings</button>
+
+  <br>
 </template>
