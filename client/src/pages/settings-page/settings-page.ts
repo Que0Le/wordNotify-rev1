@@ -12,6 +12,7 @@ export class SettingsPage {
   private httpClient = httpClient;
 
   async created() {
+    console.log("TCL: httpClient", httpClient)
     const settingsResponse = (await this.httpClient.fetch('/resources/settings')) as unknown as typeof vocabConfig
     this.vocabConfig = settingsResponse;
   }

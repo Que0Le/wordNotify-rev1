@@ -23,6 +23,10 @@ export class RouterDistributor {
       parentDir: '../pages',
       module: PLATFORM.moduleName('../pages/settings-page/settings-page'),
     }],
+    ['dicts', {
+      parentDir: '../pages',
+      module: PLATFORM.moduleName('../pages/dicts/dicts'),
+    }],
     ['json-tree', {
       parentDir: '../common/components',
       module: PLATFORM.moduleName('../common/components/json-tree/json-tree'),

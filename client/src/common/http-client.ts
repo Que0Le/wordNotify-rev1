@@ -5,7 +5,7 @@ const appConfig = JSON.parse(JSON.stringify(appConfigDefault)).default as unknow
 const { Authorization, baseUrl } = appConfig;
 
 
-export let httpClient = new HttpClient();
+export const httpClient = new HttpClient();
 
 httpClient.configure(config => {
   config
@@ -26,6 +26,7 @@ httpClient.configure(config => {
       },
       response(response) {
         console.log(`Received ${response.status} ${response.url}`);
+        console.log("TCL: response -> response", response)
         return response.json();
       }
     });
