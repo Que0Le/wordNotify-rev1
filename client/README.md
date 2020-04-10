@@ -1,3 +1,27 @@
+# Start the App
+
+```bash
+cd client
+npm i
+npm run start
+
+# App available
+http://localhost:8080
+```
+
+# Configuration
+You need an `app-config.json` file in `client/app-config.json`, as I didn't want to include login data globally.
+(`app-config.json` is in `.gitignore`)
+
+{
+  "Authorization": "btoa({user} + ":" + {password})",
+  "baseUrl": "/api/v1" // default
+  "baseUrl": "localhost:5000/api/v1" // or
+  "baseUrl": "http://192.168.2.xxx:5000/api/v1" // Local machine addrese
+}
+
+
+
 # `client`
 
 This project is bootstrapped by [aurelia-cli](https://github.com/aurelia/cli).
