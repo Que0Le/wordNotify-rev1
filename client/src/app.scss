@@ -1,3 +1,7 @@
+body {
+  background: black;
+  filter: invert(1);
+}
 
 .mainRouterContainer {
   &.isRequesting {
