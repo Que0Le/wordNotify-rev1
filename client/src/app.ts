@@ -1,4 +1,7 @@
+import { autoinject } from 'aurelia-framework';
 import { PLATFORM } from 'aurelia-pal';
+import { httpClient } from './common/http-client';
+
 interface ISourceSetting {
   name: string
   link: string
@@ -12,6 +15,8 @@ export class App {
   public message: string = 'Learn some Vocabs';
 
   private router: Router;
+
+  private httpClient = httpClient;
 
   configureRouter(config: RouterConfiguration, router: Router) {
     config.map([
