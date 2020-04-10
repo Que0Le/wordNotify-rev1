@@ -1,48 +1,10 @@
 {
-    "system_notification": {
-        "enable": false,
-        "audio": false,
-        "audio_file_on_notification": "",
-        "audio_on_notification": true,
-        "duration_sec": 2,
-        "interval_sec": 7,
-        "toast_notification": true,
-        "methods": {
-            "windows": {
-                "win10toast": true
-            },
-            "linux": {
-                "plyer": true
-            },
-            "macos": {
-                "terminal-notifier": true,
-                "plyer": false
-            }
-        }
-    },
-    "web_notification": {
-        "enable": false,
-        "audio": false,
-        "audio_file_on_notification": "",
-        "audio_on_notification": true,
-        "duration_sec": 3,
-        "interval_sec": 10,
-        "toast_notification": true
-    },
     "notification": {
         "dict_dbs_to_notify": [
             "EN_DE",
             "DE_EN",
             "FR_EN"
         ]
-    },
-    "settings": {
-        "API_username": "tom",
-        "API_password": "thisIStom",
-        "NotifierThead_sleep_iterator_sec": 5,
-        "debug": true,
-        "user_reloader": true,
-        "db_file": "testdb_2.db"
     },
     "online_sources": [
         {
@@ -67,5 +29,43 @@
                 }
             ]
         }
-    ]
+    ],
+    "settings": {
+        "API_password": "thisIStom",
+        "API_username": "tom",
+        "NotifierThead_sleep_iterator_sec": 5,
+        "db_file": "testdb_2.db",
+        "debug": true,
+        "user_reloader": true
+    },
+    "system_notification": {
+        "audio": false,
+        "audio_file_on_notification": "",
+        "audio_on_notification": true,
+        "duration_sec": 2,
+        "enable": false,
+        "interval_sec": 7,
+        "methods": {
+            "linux": {
+                "plyer": true
+            },
+            "macos": {
+                "plyer": false,
+                "terminal-notifier": true
+            },
+            "windows": {
+                "win10toast": true
+            }
+        },
+        "toast_notification": true
+    },
+    "web_notification": {
+        "audio": false,
+        "audio_file_on_notification": "",
+        "audio_on_notification": true,
+        "duration_sec": 3,
+        "enable": false,
+        "interval_sec": 10,
+        "toast_notification": true
+    }
 }
