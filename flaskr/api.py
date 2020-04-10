@@ -90,6 +90,49 @@ def app_settings():
         else:
             return jsonify({"status": error})
 
+@bp.route('/api/v1/resources/dicts_db', methods=['GET', 'POST', 'PUT', 'DELETE'])
+@auth.login_required
+def api_dicts_db():
+    db = get_db()
+    r = request.json
+    if request.method == 'GET':
+        try:
+            all_dicts = db.execute(
+                "SELECT * FROM ALL_DICTS;"
+                ).fetchall()
+            return jsonify(all_dicts)
+        except Exception:
+            print(traceback.format_exc())
+            return jsonify({"status": "GET DB error"})
+    elif request.method == 'POST':
+        try:
+            db.execute("insert into ALL_DICTS (table_name) \
+                    values (?);", r["dict_db"])
+            db.commit()
+            return r
+        except Exception:
+            print(traceback.format_exc())
+            return jsonify({"status": "POST DB error"})
+
+    elif request.method == 'PUT':
+        try:
+            db.execute("update ALL_DICTS set table_name=? where table_name=?;\
+                ", (r["new_dict_db"], r["dict_db"])).fetchall()
+            db.commit()
+            return r
+        except Exception:
+            print(traceback.format_exc())
+            return jsonify({"status": "PUT DB error"})
+    elif request.method == 'DELETE':
+        try:
+            db.execute("delete from ALL_DICTS where\
+                    table_name=;\
+                ", r["dict_db"]).fetchall()
+            db.commit()
+            return r
+        except Exception:
+            print(traceback.format_exc())
+            return jsonify({"status": "DELETE DB error"})
 
 @bp.route('/api/v1/resources/dicts', methods=['GET', 'POST', 'PUT', 'DELETE'])
 @auth.login_required
