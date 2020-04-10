@@ -1,0 +1,11 @@
+
+.mainRouterContainer {
+  &.isRequesting {
+    cursor: progress;
+  }
+}
+
+.sourceSettingsContainer {
+  display: flex;
+  flex-direction: column;
+}

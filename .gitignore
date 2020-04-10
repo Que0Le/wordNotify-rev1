@@ -14,3 +14,6 @@ build/
 *~
 .vscode/
 testdb.db
+
+# FE
+node_modules
