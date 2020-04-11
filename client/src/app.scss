@@ -1,6 +1,13 @@
 body {
   background: black;
   filter: invert(1);
+
+  .jumpable {
+    &::before {
+      background: #CAD7E3;
+      color: #f00;
+    }
+  }
 }
 
 .mainRouterContainer {
