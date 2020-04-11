@@ -2,7 +2,10 @@
   <h1>${message}</h1>
 
   <template repeat.for="[key, value] of parentRouteMap">
-    <a href="#/r/${key}">${key}</a>
+    <a
+      class="routeMap__route"
+      href="#/r/${key}"
+    >${key}</a>
   </template>
 
   <div class="compose-container">
