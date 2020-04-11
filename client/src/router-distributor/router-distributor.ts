@@ -1,18 +1,36 @@
+import { autoinject } from 'aurelia-framework';
+import { EventAggregator, Subscription } from 'aurelia-event-aggregator';
 import { PLATFORM } from 'aurelia-pal';
-import { SettingsPage } from '../pages/settings-page/settings-page';
+import { RouterEvent } from 'aurelia-router';
+import { refreshJumpable } from 'components/features/jumpable/jumpable';
 
 interface IComponentRoute {
   parentDir: string  // FIX_ME: I don't always want to specify this extra
   module: string
 }
 
+@autoinject()
 export class RouterDistributor {
   message: string;
   viewModelName: string;
   viewModel: string;
 
-  constructor() {
+  private constructor(private eventAggregator: EventAggregator) {
     this.message = 'RouterDistributor';
+  }
+
+  private subscriptions: Subscription[] = [];
+
+  bind() {
+    this.attachEvents();
+  }
+
+  attached() {
+    this.refreshJumpable()
+  }
+
+  detached() {
+    this.subscriptions.forEach(sub => sub.dispose());
   }
 
   /**
@@ -26,6 +44,10 @@ export class RouterDistributor {
     ['dicts', {
       parentDir: '../pages',
       module: PLATFORM.moduleName('../pages/dicts/dicts'),
+    }],
+    ['home', {
+      parentDir: '../pages',
+      module: PLATFORM.moduleName('../pages/home/home'),
     }],
     ['json-tree', {
       parentDir: '../common/components',
@@ -42,4 +64,16 @@ export class RouterDistributor {
     }
   }
 
+  refreshJumpable() {
+    window.setTimeout(() => {
+      refreshJumpable();
+    }, 0);
+  }
+
+  attachEvents() {
+    this.subscriptions.push(
+      // https://aurelia.io/docs/routing/configuration#router-events
+      this.eventAggregator.subscribe(RouterEvent.Success, this.refreshJumpable)
+    );
+  }
 }
