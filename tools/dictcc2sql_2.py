@@ -6,7 +6,7 @@ import datetime
 
 # con = sqlite3.connect(":memory:")
 con = sqlite3.connect("../testdb_2.db")
-con.execute(f"CREATE TABLE IF NOT EXISTS ALL_DICTS(table_name text NOT NULL, size integer)")
+con.execute(f"CREATE TABLE IF NOT EXISTS ALL_DICTS(id integer PRIMARY KEY AUTOINCREMENT, table_name text NOT NULL, size integer)")
 
 def filebrowser(parents="", ext=""):
     "Returns files with an extension"
@@ -50,7 +50,8 @@ for file_path in x:
             i+=1
         con.executemany(querry, lines_arr)
         con.commit()
-        con.executemany("insert into ALL_DICTS(table_name, size) values (?,?)", [(table_name, i)])
+        con.executemany("insert into ALL_DICTS(id, table_name, size) values (?,?,?)", [(None, table_name, i)])
+        con.commit()
 
 
     

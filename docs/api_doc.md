@@ -1,3 +1,5 @@
+# Deprecated. See `docs/wordNotify_v1.postman_collection.json`
+
 
 - [/resources](#resources)
   - [/settings](#settings)
