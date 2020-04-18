@@ -1,1 +1,5 @@
-export type IApiResponse<T> = { response: T }
+declare global {
+  type IApiResponse<T> = { response: T }
+}
+
+export { }
