@@ -19,6 +19,7 @@
   "devDependencies": {
     "@cypress/webpack-preprocessor": "^4.0.3",
     "@types/jasmine": "^2.8.9",
+    "@types/jsoneditor": "^8.6.0",
     "@types/lodash": "^4.14.117",
     "@types/lodash-es": "^4.17.3",
     "@types/node": "^10.11.6",
