@@ -2,6 +2,7 @@ import { autoinject } from 'aurelia-framework';
 import { Subscription, EventAggregator } from 'aurelia-event-aggregator';
 import { RouterConfiguration, Router, RouterEvent } from 'aurelia-router';
 import './common/app-modules';
+import '../@types/index.types';
 import { appRoutes } from './router-distributor';
 
 import './app.scss'

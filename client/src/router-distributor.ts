@@ -11,6 +11,7 @@ export const appRoutes = {
     // pages
     'home': './pages/home/home',
     'dicts': './pages/dicts/dicts',
+
     'example-parent-route': './pages/examples/example-parent-route/example-parent-route',
     'settings-page': './pages/settings-page/settings-page',
     // common
