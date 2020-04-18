@@ -1,4 +1,4 @@
-import { IAppRouter } from './../../@types/app';
+import { IAppRouter } from '../@types/app';
 import { autoinject } from 'aurelia-framework';
 import { EventAggregator, Subscription } from 'aurelia-event-aggregator';
 import { RouterEvent } from 'aurelia-router';
@@ -7,18 +7,16 @@ import { refreshJumpable } from 'components/features/jumpable/jumpable';
 import './router-distributor.scss';
 
 export const appRoutes = {
-  // pages
-  'home': '../pages/home/home',
-  'dicts': '../pages/dicts/dicts',
-  'example-parent-route': '../pages/examples/example-parent-route/example-parent-route',
-  'settings-page': '../pages/settings-page/settings-page',
-  // common
-  'json-tree': '../common/components/json-tree/json-tree',
-}
-
-interface IComponentRoute {
-  parentDir: string  // FIX_ME: I don't always want to specify this extra
-  module: string
+  nav: {
+    // pages
+    'home': './pages/home/home',
+    'dicts': './pages/dicts/dicts',
+    'example-parent-route': './pages/examples/example-parent-route/example-parent-route',
+    'settings-page': './pages/settings-page/settings-page',
+    // common
+    'json-tree': './common/components/json-tree/json-tree',
+  },
+  'router-distributor': './router-distributor'
 }
 
 @autoinject()
@@ -46,7 +44,7 @@ export class RouterDistributor {
   /**
    * Add all your pages here, to have them automatically appear in the navigation view
    */
-  parentRouteMap = new Map<string, string>(Object.entries(appRoutes));
+  parentRouteMap = new Map<string, string>(Object.entries(appRoutes.nav));
 
   hasChildRoutes = [
     'example-parent-route',
