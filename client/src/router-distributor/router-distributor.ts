@@ -55,12 +55,15 @@ export class RouterDistributor {
     }],
   ]);
 
-  activate(params) {
+  activate(params: IAppRouter) {
     if (params.viewModelName !== undefined) {
       const { viewModelName } = params;
 
       this.viewModelName = viewModelName;
-      this.viewModel = `${this.parentRouteMap.get(viewModelName).parentDir}/${viewModelName}/${viewModelName}`;
+      const viewModelRouteInfo = this.parentRouteMap.get(viewModelName);
+      if (viewModelRouteInfo === undefined) throw new Error('No route found');
+
+      this.viewModel = `${viewModelRouteInfo.parentDir}/${viewModelName}/${viewModelName}`;
     }
   }
 

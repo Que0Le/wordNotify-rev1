@@ -73,19 +73,19 @@ export const toggleJumpable = (context = '#hio-body') => {
  */
 const makeTagsJumpable = (tagNames = ['a', 'button', 'label']) => {
   let uniqueJumpMark = getUniqueJumpMarkGenerator();
-  let destroyCollector = [];
+  let destroyCollector: any[] = [];
 
-  const destroy = (taggels) => {
+  const destroy = (taggels: HTMLCollectionOf<HTMLElement>) => {
     return () => {
       for (let taggel of taggels) {
         taggel.classList.remove(JUMP_CLASS);
-        taggel.setAttribute(DATA_JUMP_MARK_VALUE, null);
+        taggel.setAttribute(DATA_JUMP_MARK_VALUE, '');
       }
     };
   };
 
   tagNames.forEach((tag) => {
-    let taggels = document.getElementsByTagName(tag);
+    let taggels = document.getElementsByTagName(tag) as HTMLCollectionOf<HTMLElement>;
     for (let taggel of taggels) {
       taggel.classList.add(JUMP_CLASS);
       let value = uniqueJumpMark.next().value || '';
@@ -108,8 +108,8 @@ function* getUniqueJumpMarkGenerator() {
 /**
  * When jumpable is activated, listen to key presses to actually jump.
  */
-const jumpableKeyCodesListener = (destroy) => {
-  keyBinding(ABC_JOINED, JUMP_CLASS, (ev) => {
+const jumpableKeyCodesListener = (destroy: any) => {
+  keyBinding(ABC_JOINED, JUMP_CLASS, (ev: any) => {
     let pressedKey = ev.key;
     let jumppelIterable = document.getElementsByClassName(JUMP_CLASS);
     const activate = activateElement(destroy);
@@ -127,6 +127,7 @@ const jumpableKeyCodesListener = (destroy) => {
 
 function checkActiveItemBlackList() {
   const { activeElement } = document;
+  if (activeElement === null) return;
 
   // Root source: list item with text div is contenteditable
   const isContentEditable = activeElement.getAttribute('contenteditable');
@@ -144,8 +145,8 @@ function checkActiveItemBlackList() {
  *  * @param {HTML.Collection} jumppelIterable
  *  * @param {String} pressedKey
  */
-const activateElement = (cb, activation = 'click') => {
-  const action = (jumppelIterable, pressedKey) => {
+const activateElement = (cb: Function, activation = 'click') => {
+  const action = (jumppelIterable: any, pressedKey: any) => {
     for (let jumppel of jumppelIterable) {
       let attr = jumppel.getAttribute(DATA_JUMP_MARK_VALUE);
       if (checkActiveItemBlackList()) return;
@@ -167,7 +168,7 @@ const activateElement = (cb, activation = 'click') => {
  *
  * @param {Function} cb - Callback to deactivate jump ability
  */
-function destroyKeybinding(cb) {
+function destroyKeybinding(cb: Function | Function[]) {
   if (typeof cb === 'function') {
     cb();
     hotkeys.deleteScope(JUMP_CLASS);
