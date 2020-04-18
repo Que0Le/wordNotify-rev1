@@ -11,14 +11,14 @@ export const endpoints = {
 
     // WORDS //
     words: (dictId: number) => ({
-      /** 'dicts/${dictId}/words' */
-      base: 'dicts/${dictId}/words',
-      /** 'dicts/${dictId}/words/${wordId}' */
-      single: (wordId: number) => `dicts/${dictId}/words/${wordId}`,
-      /** 'dicts/${dictId}/words/${startWordId-endWordId}' */
-      range: (startWordId: number, endWordId: number) => `dicts/${dictId}/words/${startWordId}-${endWordId}`,
-      /** 'dicts/${dictId}/words/random' */
-      random: `dicts/${dictId}/words/random`,
+      /** '/dicts/${dictId}/words' */
+      base: '/dicts/${dictId}/words',
+      /** '/dicts/${dictId}/words/${wordId}' */
+      single: (wordId: number) => `/dicts/${dictId}/words/${wordId}`,
+      /** '/dicts/${dictId}/words/${startWordId-endWordId}' */
+      range: (startWordId: number, endWordId: number) => `/dicts/${dictId}/words/${startWordId}-${endWordId}`,
+      /** '/dicts/${dictId}/words/random' */
+      random: `/dicts/${dictId}/words/random`,
     }),
   }
 }
