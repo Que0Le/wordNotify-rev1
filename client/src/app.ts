@@ -1,5 +1,6 @@
 import { RouterConfiguration, Router, RouterEvent } from 'aurelia-router';
 import './common/app-modules';
+import { appRoutes } from './router-distributor';
 
 import './app.scss'
 
@@ -14,18 +15,18 @@ export class App {
         title: 'Router Distributor',
         route: '',
         nav: true,
-        moduleId: './router-distributor/router-distributor'
+        moduleId: appRoutes["router-distributor"]
       },
       // Universal routing, aims to add route and links in the view with minimum setup
       {
         route: 'r/*viewModelName',
-        moduleId: './router-distributor/router-distributor'
+        moduleId: appRoutes["router-distributor"]
       },
       {
         route: 'example-parent-route',
         title: 'Parent route',
         nav: true,
-        moduleId: './pages/examples/example-parent-route/example-parent-route',
+        moduleId: appRoutes.nav["example-parent-route"]
       },
     ]);
     this.router = router;
