@@ -59,6 +59,10 @@ export class RouterDistributor {
     }],
   ]);
 
+  hasChildRoutes = [
+    'example-parent-route',
+  ]
+
   activate(params: IAppRouter) {
     if (params.viewModelName !== undefined) {
       const { viewModelName } = params;

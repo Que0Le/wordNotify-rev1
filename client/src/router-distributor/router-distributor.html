@@ -1,8 +1,18 @@
 <template>
+  <require from='../pages/examples/example-parent-route/example-parent-route'></require>
   <h1>${message}</h1>
 
   <template repeat.for="[key, value] of parentRouteMap">
+    <!-- Has childen routes -->
     <a
+      if.bind="hasChildRoutes.includes(key)"
+      class="routeMap__route"
+      href="#${key}"
+    >${key}</a>
+
+    <!-- Dynamic routes !! Are not allowed to have <router-view> -->
+    <a
+      else
       class="routeMap__route"
       href="#/r/${key}"
     >${key}</a>
