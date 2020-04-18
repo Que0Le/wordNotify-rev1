@@ -1,3 +1,7 @@
 <template>
   <h1>${message}</h1>
+  Available Dictionaries
+  <template repeat.for="dict of dicts">
+    <a>${dict.table_name}</a>
+  </template>
 </template>
