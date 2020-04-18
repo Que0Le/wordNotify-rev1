@@ -1,13 +1,34 @@
+import { autoinject } from 'aurelia-framework';
+import { Subscription, EventAggregator } from 'aurelia-event-aggregator';
 import { RouterConfiguration, Router, RouterEvent } from 'aurelia-router';
 import './common/app-modules';
 import { appRoutes } from './router-distributor';
 
 import './app.scss'
+import { refreshJumpable } from 'components/features/jumpable/jumpable';
 
+@autoinject()
 export class App {
   public message: string = 'Learn some Vocabs';
 
   private router: Router;
+
+  private subscriptions: Subscription[] = [];
+
+  private constructor(private eventAggregator: EventAggregator) {
+  }
+
+  bind() {
+    this.attachEvents();
+  }
+
+  attached() {
+    this.refreshJumpable()
+  }
+
+  detached() {
+    this.subscriptions.forEach(sub => sub.dispose());
+  }
 
   configureRouter(config: RouterConfiguration, router: Router) {
     config.map([
@@ -36,5 +57,19 @@ export class App {
       },
     ]);
     this.router = router;
+  }
+
+  refreshJumpable() {
+    window.setTimeout(() => {
+      refreshJumpable();
+      console.log("TCL: App -> refreshJumpable -> refreshJumpable")
+    }, 0);
+  }
+
+  attachEvents() {
+    this.subscriptions.push(
+      // https://aurelia.io/docs/routing/configuration#router-events
+      this.eventAggregator.subscribe(RouterEvent.Success, this.refreshJumpable)
+    );
   }
 }

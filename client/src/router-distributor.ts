@@ -27,19 +27,19 @@ export class RouterDistributor {
   private constructor(private eventAggregator: EventAggregator) {
   }
 
-  private subscriptions: Subscription[] = [];
+  // private subscriptions: Subscription[] = [];
 
-  bind() {
-    this.attachEvents();
-  }
+  // bind() {
+  //   this.attachEvents();
+  // }
 
-  attached() {
-    this.refreshJumpable()
-  }
+  // attached() {
+  //   this.refreshJumpable()
+  // }
 
-  detached() {
-    this.subscriptions.forEach(sub => sub.dispose());
-  }
+  // detached() {
+  //   this.subscriptions.forEach(sub => sub.dispose());
+  // }
 
   /**
    * Add all your pages here, to have them automatically appear in the navigation view
@@ -63,16 +63,16 @@ export class RouterDistributor {
     }
   }
 
-  refreshJumpable() {
-    window.setTimeout(() => {
-      refreshJumpable();
-    }, 0);
-  }
+  // refreshJumpable() {
+  //   window.setTimeout(() => {
+  //     // refreshJumpable();
+  //   }, 0);
+  // }
 
-  attachEvents() {
-    this.subscriptions.push(
-      // https://aurelia.io/docs/routing/configuration#router-events
-      this.eventAggregator.subscribe(RouterEvent.Success, this.refreshJumpable)
-    );
-  }
+  // attachEvents() {
+  //   this.subscriptions.push(
+  //     // https://aurelia.io/docs/routing/configuration#router-events
+  //     // this.eventAggregator.subscribe(RouterEvent.Success, this.refreshJumpable)
+  //   );
+  // }
 }
