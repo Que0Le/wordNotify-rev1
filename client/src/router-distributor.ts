@@ -1,4 +1,4 @@
-import { IAppRouter } from '../@types/app';
+import { IAppRouter } from '../@types/app.types';
 import { autoinject } from 'aurelia-framework';
 import { EventAggregator, Subscription } from 'aurelia-event-aggregator';
 import { RouterEvent } from 'aurelia-router';

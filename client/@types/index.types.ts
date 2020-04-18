@@ -1,4 +1,4 @@
-/// <reference path="./api.ts" />
-/// <reference path="./app.ts" />
+/// <reference path="./api.types.ts" />
+/// <reference path="./app.types.ts" />
 
 export { }
