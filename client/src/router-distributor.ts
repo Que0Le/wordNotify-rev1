@@ -48,6 +48,7 @@ export class RouterDistributor {
 
   hasChildRoutes = [
     'example-parent-route',
+    'dicts',
   ]
 
   activate(params: IAppRouter) {

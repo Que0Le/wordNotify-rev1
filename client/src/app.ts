@@ -28,6 +28,12 @@ export class App {
         nav: true,
         moduleId: appRoutes.nav["example-parent-route"]
       },
+      {
+        route: 'dicts',
+        title: 'Dicts',
+        nav: true,
+        moduleId: appRoutes.nav.dicts
+      },
     ]);
     this.router = router;
   }
