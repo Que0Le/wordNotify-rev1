@@ -7,14 +7,14 @@
       if.bind="hasChildRoutes.includes(key)"
       class="routeMap__route"
       href="#${key}"
-    >${key}</a>
+    >C ${key}</a>
 
     <!-- Dynamic routes !! Are not allowed to have <router-view> -->
     <a
       else
       class="routeMap__route"
       href="#/r/${key}"
-    >${key}</a>
+    >D ${key}</a>
   </template>
 
   <div class="compose-container">
