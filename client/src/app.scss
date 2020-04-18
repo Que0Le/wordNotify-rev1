@@ -1,6 +1,8 @@
 body {
   background: black;
   filter: invert(1);
+  font-family: sans-serif;
+  color: #ce7979;
 
   .jumpable {
     &::before {
