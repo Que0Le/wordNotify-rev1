@@ -127,21 +127,42 @@ class NotifierThead(threading.Thread):
                 try:
                     rand_dict_index = random.randint(
                         0, len(global_config["notification"]["dict_dbs_to_notify"])-1)
-                    json_response, url_full = handyfunctions.get_dict_with_param(
+                    rand_dict_name = global_config["notification"]["dict_dbs_to_notify"][rand_dict_index]
+                    rand_dict_id = -1
+                    # Get all dict to find out id
+                    json_response, url_full = handyfunctions.get_dict_by_param(
+                        encoded_u=current_app.config["ENCODED_U"],
+                        dict_id="")
+                    if not json_response:
+                        print("could not fetch from server!")
+                        time.sleep(1)
+                        continue
+                    for r in json_response["response"]:
+                        if r["table_name"] == rand_dict_name:
+                            rand_dict_id = r["id"]
+                            break
+                    if rand_dict_id<0:
+                        print(f"dict with name {rand_dict_name} not found in server!")
+                        time.sleep(1)
+                        continue
+                    json_response, url_full = handyfunctions.get_word_by_param(
                         encoded_u=current_app.config["ENCODED_U"], 
-                        dict_db=global_config["notification"]["dict_dbs_to_notify"][rand_dict_index])
+                        dict_id=rand_dict_id,
+                        word_id="random")
                 except:
                     traceback.print_exc()
                     print('error: getting notification material.')
                     continue
                 # Push notification
                 # TODO: Consider a while True here to prevent exception db busy (openned by other thread)
+                notify_wid = json_response["response"]["id"]
+                notify_content = json_response["response"]["line"]
                 if platform == "linux":
                     from plyer import notification
                     try:
                         notification.notify(
-                            title='id: {0}'.format(json_response[0]["id"]),
-                            message='content: {0}'.format(json_response[0]["line"]),
+                            title='id: {0}'.format(notify_wid),
+                            message='content: {0}'.format(notify_content),
                             app_name='wordNotify',
                             # app_icon="beat_brick.ico",  # e.g. 'C:\\icon_32x32.ico'
                             timeout=global_config["system_notification"]["duration_sec"],
@@ -155,12 +176,12 @@ class NotifierThead(threading.Thread):
                         if notify_methods["terminal-notifier"]:
                             os.system("""
                             terminal-notifier -title '{}' -message '{}' -open '{}'
-                            """.format(json_response[0]["id"], json_response[0]["line"], url_full))
+                            """.format(notify_wid, notify_content, url_full.rsplit('/', 1)[0] + "/" + str(notify_wid)))
                         elif notify_methods["plyer"]:
                             from plyer import notification
                             notification.notify(
-                                title='id: {0}'.format(json_response[0]["id"]),
-                                message='content: {0}'.format(json_response[0]["line"]),
+                                title='id: {0}'.format(notify_wid),
+                                message='content: {0}'.format(notify_content),
                                 app_name='wordNotify',
                                 # app_icon="beat_brick.ico",  # e.g. 'C:\\icon_32x32.ico'
                                 timeout=global_config["system_notification"]["duration_sec"],
@@ -174,12 +195,12 @@ class NotifierThead(threading.Thread):
                     toast = ToastNotifier()
                     try:
                         toast.show_toast(
-                            title='id: {0}'.format(json_response[0]["id"]),
-                            msg='content: {0}'.format(json_response[0]["line"]),
+                            title='id: {0}'.format(notify_wid),
+                            msg='content: {0}'.format(notify_content),
                             icon_path=None,
                             duration=global_config["system_notification"]["duration_sec"],
                             threaded=False,
-                            callback_on_click=(lambda: self.open_browser_tab(url_full)))
+                            callback_on_click=(lambda: self.open_browser_tab(url_full.rsplit('/', 1)[0] + "/" + str(notify_wid))))
                     except Exception:
                         traceback.print_exc()
                         print('error: creating windows toast notification')
