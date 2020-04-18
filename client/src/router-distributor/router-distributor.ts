@@ -1,8 +1,11 @@
+import { IAppRouter } from './../../@types/app';
 import { autoinject } from 'aurelia-framework';
 import { EventAggregator, Subscription } from 'aurelia-event-aggregator';
 import { PLATFORM } from 'aurelia-pal';
 import { RouterEvent } from 'aurelia-router';
 import { refreshJumpable } from 'components/features/jumpable/jumpable';
+
+import './router-distributor.scss';
 
 interface IComponentRoute {
   parentDir: string  // FIX_ME: I don't always want to specify this extra
@@ -11,12 +14,10 @@ interface IComponentRoute {
 
 @autoinject()
 export class RouterDistributor {
-  message: string;
   viewModelName: string;
   viewModel: string;
 
   private constructor(private eventAggregator: EventAggregator) {
-    this.message = 'RouterDistributor';
   }
 
   private subscriptions: Subscription[] = [];
@@ -37,6 +38,10 @@ export class RouterDistributor {
    * Add all your pages here, to have them automatically appear in the navigation view
    */
   parentRouteMap = new Map<string, IComponentRoute>([
+    ['home', {
+      parentDir: '../pages',
+      module: PLATFORM.moduleName('../pages/home/home'),
+    }],
     ['settings-page', {
       parentDir: '../pages',
       module: PLATFORM.moduleName('../pages/settings-page/settings-page'),
@@ -44,10 +49,6 @@ export class RouterDistributor {
     ['dicts', {
       parentDir: '../pages',
       module: PLATFORM.moduleName('../pages/dicts/dicts'),
-    }],
-    ['home', {
-      parentDir: '../pages',
-      module: PLATFORM.moduleName('../pages/home/home'),
     }],
     ['json-tree', {
       parentDir: '../common/components',
