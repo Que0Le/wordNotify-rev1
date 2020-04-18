@@ -37,4 +37,5 @@ node_modules
 /test/coverage-karma
 
 # App Specific configs
-appConfig.json
+./app-config.json
+app-config.json
