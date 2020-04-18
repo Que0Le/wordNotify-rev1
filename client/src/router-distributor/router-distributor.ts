@@ -1,7 +1,6 @@
 import { IAppRouter } from './../../@types/app';
 import { autoinject } from 'aurelia-framework';
 import { EventAggregator, Subscription } from 'aurelia-event-aggregator';
-import { PLATFORM } from 'aurelia-pal';
 import { RouterEvent } from 'aurelia-router';
 import { refreshJumpable } from 'components/features/jumpable/jumpable';
 
@@ -40,19 +39,23 @@ export class RouterDistributor {
   parentRouteMap = new Map<string, IComponentRoute>([
     ['home', {
       parentDir: '../pages',
-      module: PLATFORM.moduleName('../pages/home/home'),
+      module: '../pages/home/home',
     }],
     ['settings-page', {
       parentDir: '../pages',
-      module: PLATFORM.moduleName('../pages/settings-page/settings-page'),
+      module: '../pages/settings-page/settings-page',
     }],
     ['dicts', {
       parentDir: '../pages',
-      module: PLATFORM.moduleName('../pages/dicts/dicts'),
+      module: '../pages/dicts/dicts',
+    }],
+    ['example-parent-route', {
+      parentDir: '../pages',
+      module: '../pages/examples/example-parent-route/example-parent-route',
     }],
     ['json-tree', {
       parentDir: '../common/components',
-      module: PLATFORM.moduleName('../common/components/json-tree/json-tree'),
+      module: '../common/components/json-tree/json-tree',
     }],
   ]);
 
