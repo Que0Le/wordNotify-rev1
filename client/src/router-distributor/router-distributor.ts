@@ -6,6 +6,16 @@ import { refreshJumpable } from 'components/features/jumpable/jumpable';
 
 import './router-distributor.scss';
 
+export const appRoutes = {
+  // pages
+  'home': '../pages/home/home',
+  'dicts': '../pages/dicts/dicts',
+  'example-parent-route': '../pages/examples/example-parent-route/example-parent-route',
+  'settings-page': '../pages/settings-page/settings-page',
+  // common
+  'json-tree': '../common/components/json-tree/json-tree',
+}
+
 interface IComponentRoute {
   parentDir: string  // FIX_ME: I don't always want to specify this extra
   module: string
@@ -36,28 +46,7 @@ export class RouterDistributor {
   /**
    * Add all your pages here, to have them automatically appear in the navigation view
    */
-  parentRouteMap = new Map<string, IComponentRoute>([
-    ['home', {
-      parentDir: '../pages',
-      module: '../pages/home/home',
-    }],
-    ['settings-page', {
-      parentDir: '../pages',
-      module: '../pages/settings-page/settings-page',
-    }],
-    ['dicts', {
-      parentDir: '../pages',
-      module: '../pages/dicts/dicts',
-    }],
-    ['example-parent-route', {
-      parentDir: '../pages',
-      module: '../pages/examples/example-parent-route/example-parent-route',
-    }],
-    ['json-tree', {
-      parentDir: '../common/components',
-      module: '../common/components/json-tree/json-tree',
-    }],
-  ]);
+  parentRouteMap = new Map<string, string>(Object.entries(appRoutes));
 
   hasChildRoutes = [
     'example-parent-route',
@@ -71,7 +60,7 @@ export class RouterDistributor {
       const viewModelRouteInfo = this.parentRouteMap.get(viewModelName);
       if (viewModelRouteInfo === undefined) throw new Error('No route found');
 
-      this.viewModel = `${viewModelRouteInfo.parentDir}/${viewModelName}/${viewModelName}`;
+      this.viewModel = viewModelRouteInfo;
     }
   }
 
