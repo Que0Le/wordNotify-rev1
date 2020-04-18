@@ -22,6 +22,12 @@ export class App {
         route: 'r/*viewModelName',
         moduleId: PLATFORM.moduleName('./router-distributor/router-distributor')
       },
+      {
+        route: 'example-parent-route',
+        title: 'Parent route',
+        nav: true,
+        moduleId: './pages/examples/example-parent-route/example-parent-route',
+      },
     ]);
     this.router = router;
   }
