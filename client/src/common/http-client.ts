@@ -4,8 +4,13 @@ import * as appConfigDefault from '../../app-config.json';
 const appConfig = JSON.parse(JSON.stringify(appConfigDefault)).default as unknown as typeof appConfigDefault
 const { Authorization, baseUrl } = appConfig;
 
+const offlineMode = true
 
-export const httpClient = new HttpClient();
+export const httpClient = offlineMode ? new HttpClient() : {
+  configure: () => { },
+  fetch: () => { },
+  isRequesting: false
+};
 
 httpClient.configure(config => {
   config
@@ -26,7 +31,6 @@ httpClient.configure(config => {
       },
       response(response) {
         console.log(`Received ${response.status} ${response.url}`);
-        console.log("TCL: response -> response", response)
         return response.json();
       }
     });
