@@ -194,13 +194,17 @@ class NotifierThead(threading.Thread):
                     from win10toast import ToastNotifier
                     toast = ToastNotifier()
                     try:
+                        # url = http://127.0.0.1:5000/api/v1/dicts/6/words/random
+                        # u = http://127.0.0.1:5000/api/v1/dicts/6/words/20906
+                        # u = url_full.rsplit('/', 1)[0] + "/" + str(notify_wid)
+                        u = handyfunctions.url_base + "/dicts/" + str(rand_dict_id) + "/words/" + str(notify_wid)
                         toast.show_toast(
                             title='id: {0}'.format(notify_wid),
                             msg='content: {0}'.format(notify_content),
                             icon_path=None,
                             duration=global_config["system_notification"]["duration_sec"],
                             threaded=False,
-                            callback_on_click=(lambda: self.open_browser_tab(url_full.rsplit('/', 1)[0] + "/" + str(notify_wid))))
+                            callback_on_click=(lambda: self.open_browser_tab(u)))
                     except Exception:
                         traceback.print_exc()
                         print('error: creating windows toast notification')

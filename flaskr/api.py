@@ -51,6 +51,11 @@ def getDictTableName(db, dict_id):
         return r["table_name"]
     return None
 
+def respError(mess):
+    return jsonify({"response": mess, "status": "error"})
+def respSucc(mess):
+    return jsonify({"response": mess, "status": "success"})
+
 @auth.verify_password
 def verify_password(username, password):
     users = current_app.config['USERS']
@@ -78,13 +83,25 @@ def available_dicts():
     except Exception:
         print(traceback.format_exc())
         return page_not_found(404)
-    
 
-@bp.route('/api/v1/resources/settings', methods=['GET', 'POST'])
+test_settings = False
+temp_json = '''
+{
+    "notification": {
+        "dict_dbs_to_notify": [
+            "EN_DE",
+            "DE_EN",
+            "FR_EN"
+        ]
+    }
+}'''
+@bp.route('/api/v1/settings', methods=['GET', 'POST'])
 @auth.login_required
 def app_settings():
     if request.method == 'GET':
         global_config = current_app.config["GLOBAL_CONFIG"]
+        if test_settings:
+            return json.loads(temp_json)
         return global_config
     elif request.method == 'POST':
         new_config = request.json
@@ -96,292 +113,18 @@ def app_settings():
         else:
             return jsonify({"status": error})
 
-@bp.route('/api/v1/resources/dicts_db', methods=['GET', 'POST', 'PUT', 'DELETE'])
+@bp.route("/settings")
 @auth.login_required
-def api_dicts_db():
-    db = get_db()
-    r = request.json
-    if request.method == 'GET':
-        try:
-            all_dicts = db.execute(
-                "SELECT * FROM ALL_DICTS;"
-                ).fetchall()
-            return jsonify(all_dicts)
-        except Exception:
-            print(traceback.format_exc())
-            return jsonify({"status": "GET DB error"})
-    elif request.method == 'POST':
-        try:
-            db.execute("insert into ALL_DICTS (table_name) \
-                    values (?);", r["dict_db"])
-            db.commit()
-            return r
-        except Exception:
-            print(traceback.format_exc())
-            return jsonify({"status": "POST DB error"})
+def settings_page():
+    return render_template("settings.html")
 
-    elif request.method == 'PUT':
-        try:
-            db.execute("update ALL_DICTS set table_name=? where table_name=?;\
-                ", (r["new_dict_db"], r["dict_db"])).fetchall()
-            db.commit()
-            return r
-        except Exception:
-            print(traceback.format_exc())
-            return jsonify({"status": "PUT DB error"})
-    elif request.method == 'DELETE':
-        try:
-            db.execute("delete from ALL_DICTS where\
-                    table_name=;\
-                ", r["dict_db"]).fetchall()
-            db.commit()
-            return r
-        except Exception:
-            print(traceback.format_exc())
-            return jsonify({"status": "DELETE DB error"})
-
-@bp.route('/api/v1/resources/dicts', methods=['GET', 'POST', 'PUT', 'DELETE'])
+@bp.route("/dicts/<int:dict_id>/words/word_id")
 @auth.login_required
-def api_filter():
-    query_parameters = request.args
-
-    dict_db = query_parameters.get('dict_db')
-    if dict_db:
-        # url mode http://127.0.0.1:5000/api/v1/resources/dicts?dict_db=DE_FR&random=true
-        id = query_parameters.get('id')
-        rand = query_parameters.get('random')
-        if not (dict_db!= "" and (rand or id)):
-            return page_not_found(404)
-
-        if request.method == 'GET':
-            query = f"SELECT * FROM {dict_db} WHERE"
-
-            if rand=="true":
-                # select * from DE_EN where rowid = (abs(random()) % (select (select max(rowid) from DE_EN)+1));
-                query += f' rowid=(abs(random()) % (select (select max(rowid) from {dict_db}))+1) AND'
-            if id:
-                query += f' id={id} AND'
-
-            query = query[:-4] + ';'
-
-            db = get_db()
-            try:
-                result = db.execute(query).fetchall()
-                return jsonify(result)
-            except Exception:
-                print(traceback.format_exc())
-                return page_not_found(404)
-    else:
-        # Payload mode
-        ###############
-        db = get_db()
-        ########################################## GET
-        if request.method == 'GET':
-            r_dicts = request.json
-            response = []
-            for r_dict in r_dicts:
-                # DE_EN
-                dict_db = r_dict["dict_db"]
-                option = r_dict["option"]
-                ids = r_dict["ids"]
-                id_ranges = r_dict["id_ranges"]
-                id_random = r_dict["id_random"]
-                response_ids = []
-                response_ranges = {}
-                response_random = []
-                response_all = []
-                if option=="all":
-                    try:
-                        response_all = db.execute(f"""\
-                            SELECT * FROM {r_dict["dict_db"]} WHERE true;\
-                            """).fetchall()
-                    except:
-                        print(traceback.format_exc())
-                # Get words with ids
-                try:
-                    place_holders = ', '.join(['?']*len(ids)) # ','.join(map(str, ids))
-                    response_ids = db.execute(f"""\
-                        SELECT * FROM {r_dict["dict_db"]} WHERE \
-                        id in ({place_holders}); \
-                        """, tuple(ids)).fetchall()
-                except Exception:
-                    print(traceback.format_exc())
-                # Get word has id in range defined in id_ranges. 
-                try:
-                    for range_id_string in id_ranges:
-                        temp = re.findall(r"([0-9]+)-([0-9]+)", range_id_string)
-                        if len(temp) == 0:
-                            continue
-                        (top, bot) = temp[0]
-                        r = db.execute(f"""\
-                            SELECT * FROM {r_dict["dict_db"]} WHERE \
-                            id between {int(top)} and {int(bot)}; \
-                            """).fetchall()
-                        response_ranges[range_id_string] = r
-                except Exception:
-                    print(traceback.format_exc())
-                # Get id_random random rows
-                try:
-                    maxrow = db.execute("select max(rowid) from DE_EN;").fetchone()["max(rowid)"]
-                    where_statement = ""
-                    if maxrow>id_random:
-                        # generate some random ids
-                        def random_gen(low, high):
-                            while True:
-                                yield random.randrange(low, high)
-                        gen = random_gen(1, maxrow)
-                        temp_ids = set()
-                        for x in itertools.takewhile(lambda x: len(temp_ids) < id_random, gen):
-                            temp_ids.add(x)
-                        # 
-                        place_holders = ', '.join(['?']*id_random)
-                        response_random = db.execute(f"""\
-                            SELECT * FROM {r_dict["dict_db"]} WHERE \
-                            id in ({place_holders}); \
-                            """, tuple(temp_ids)).fetchall()
-                    else:
-                        response_random = db.execute(f"""\
-                            SELECT * FROM {r_dict["dict_db"]} WHERE true\
-                            """).fetchall()
-                except Exception:
-                    print(traceback.format_exc())
-                ####
-                #### Construct part of response message
-                response_for_single_dict = {
-                    "dict_db": dict_db,
-                    "ids": response_ids,
-                    "id_ranges": response_ranges,
-                    "id_random": response_random,
-                    "all": response_all
-                }
-                response.append(response_for_single_dict)
-            return jsonify(response)
-        ########################################## POST
-        elif request.method == 'POST':
-            # DE_EN
-            req_dicts = request.json
-            response = []
-            for req_dict in req_dicts:
-                dict_db = req_dict["dict_db"]
-                data = req_dict["data"]
-                posted_words = []
-                error_trans = []
-                for word in data:
-                    try:
-                        db.execute(f"insert into {dict_db}( \
-                            id, line, note, description, date_created, last_modified \
-                            ) values (?,?,?,?,?,?)", (
-                                None, word["line"], word["note"], word["description"], 
-                                word["date_created"], word["last_modified"])
-                            )
-                        db.commit()
-                        posted_words.append(word)
-                    except:
-                        error_trans.append(word)
-                        print(traceback.format_exc())
-                response.append({
-                    "dict_db": dict_db, "posted_words": posted_words, "error_trans": error_trans
-                    })
-            return jsonify(response)
-
-
-            # req_dicts = request.json
-            # for req_dict in req_dicts:
-            #     dict_db = req_dict["dict_db"]
-            #     data = req_dict["data"]
-
-            #     querry = f"insert into {dict_db}( \
-            #         id, line, note, description, date_created, last_modified \
-            #         ) values (?,?,?,?,?,?)"
-            #     i = 1
-            #     data_array = []
-            #     try:
-            #         for word in data:
-            #             data_array.append(
-            #                 (None, word["line"], word["note"], word["description"], 
-            #                 word["date_created"], word["last_modified"]))
-            #             if i%10000 == 0:
-            #                 db.executemany(querry, data_array)
-            #                 db.commit()
-            #                 data_array.clear()
-            #             i+=1
-            #         db.executemany(querry, data_array)
-            #         db.commit()
-            #     except:
-            #         print(traceback.format_exc())
-            #         return jsonify({"status": "Error POST: writing to DB"})
-            # return jsonify({"status": "ok"})
-        ########################################## POST
-        elif request.method == 'PUT':
-            # DE_EN
-            req_dicts = request.json
-            print(req_dicts)
-            response = []
-            for req_dict in req_dicts:
-                dict_db = req_dict["dict_db"]
-                data = req_dict["data"]
-                updated_words = []
-                error_trans = []
-                for word in data:
-                    try:
-                        db.execute(f"""update {dict_db} \
-                            set line=?, note=?, description=?, date_created=?, last_modified=? \
-                            where id=?
-                            """, (
-                                word["line"], word["note"], word["description"], 
-                                word["date_created"], word["last_modified"], word["id"])
-                        )
-                        db.commit()
-                        updated_words.append(word)
-                    except:
-                        error_trans.append(word)
-                        print(traceback.format_exc())
-                response.append({
-                    "dict_db": dict_db, "updated_words": updated_words, "error_trans": error_trans
-                    })
-            return jsonify(response)
-        ########################################## DELETE
-        elif request.method == 'DELETE':
-            # DE_EN
-            req_dicts = request.json
-            response = []
-            for req_dict in req_dicts:
-                dict_db = req_dict["dict_db"]
-                ids = req_dict["ids"]
-                deleted_words = []
-                error_trans = []
-                for id_single in ids:
-                    try:
-                        db.execute(f"""delete from {dict_db} where \
-                            id={id_single}""")
-                        db.commit()
-                        deleted_words.append(id_single)
-                    except:
-                        error_trans.append(id_single)
-                        print(traceback.format_exc())
-                response.append({
-                    "dict_db": dict_db, "deleted_words": deleted_words, "error_trans": error_trans
-                    })
-            return jsonify(response)
-            # req_dicts = request.json
-            # for req_dict in req_dicts:
-            #     dict_db = req_dict["dict_db"]
-            #     ids = req_dict["ids"]
-            #     try:
-            #         db.execute(f"""delete from {dict_db} where \
-            #             id in ({tuple(ids)})""")
-            #     except:
-            #         print(traceback.format_exc())
-            #         return jsonify({"status": "Error POST: writing to DB"})
-            # return jsonify({"status": "ok"})
-
-
-
-
-def respError(mess):
-    return jsonify({"response": mess, "status": "error"})
-def respSucc(mess):
-    return jsonify({"response": mess, "status": "success"})
+def view_word_page():
+    dict_dbname = getDictTableName(db, dict_id)
+    if not dict_dbname:
+        return page_not_found(404)
+    return render_template("view_word.html")
 
 @bp.route('/api/v1/dicts/<int:dict_id>/words', 
                     methods=['GET', 'POST', 'PUT'])
@@ -458,7 +201,6 @@ def words_id_handler(dict_id, word_id_raw):
     top, bot = None, None
     if word_id_raw=="":
         # Get all words in DB. 
-        # TODO: But too large DB will break sending back
         pass
     elif word_id_raw.isnumeric():
         word_id=int(word_id_raw)
@@ -507,9 +249,7 @@ def words_id_handler(dict_id, word_id_raw):
             return respError(f"error deleting word id {word_id}")
 
     return respError("unknow error")
-###
-###
-###
+
 @bp.route('/api/v1/dicts/', methods=['GET', 'POST', 'PUT'])
 @auth.login_required
 def dicts_handler():
@@ -525,7 +265,7 @@ def dicts_handler():
             r = db.execute(f"select * from {dict_dbname} where true;\
                 ").fetchall()
             return respSucc(r)
-        except:
+        except: 
             print(traceback.format_exc())
             return respError(f"error getting dicts")
     ############# POST
