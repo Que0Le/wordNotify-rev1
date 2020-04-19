@@ -10,6 +10,7 @@ export interface IWordsListRouter {
 @autoinject()
 export class WordsList {
   message: string;
+  words: IWord[];
 
   constructor(private router: ReplaceRouterOptions<IWordsListRouter>) {
     this.message = 'WordsList';
@@ -17,8 +18,8 @@ export class WordsList {
 
   async activate(_: any, router: ReplaceRouterOptions<IWordsListRouter>) {
     const { selectedDictId } = router.options;
-    const response = await httpClient.fetch(endpoints.dicts.words(selectedDictId).range(100, 105)) as unknown as IApiResponse<IWord[]>;
-    const words = response.response
-    console.log("TCL: WordsList -> activate -> words", words)
+    const response = await httpClient.fetch(endpoints.dicts.words(selectedDictId).range(200, 205)) as unknown as IApiResponse<IWord[]>;
+    this.words = response.response
+    console.log("TCL: WordsList -> activate -> this.words", this.words)
   }
 }
