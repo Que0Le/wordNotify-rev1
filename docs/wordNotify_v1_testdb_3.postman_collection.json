@@ -140,6 +140,43 @@
 			"response": []
 		},
 		{
+			"name": "db3.Search word in dict id=1",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/api/v1/dicts/1/words/search?keyword=therap%&columns=w_id.word.meaning",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"v1",
+						"dicts",
+						"1",
+						"words",
+						"search"
+					],
+					"query": [
+						{
+							"key": "keyword",
+							"value": "therap%"
+						},
+						{
+							"key": "columns",
+							"value": "w_id.word.meaning"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "db3.Post a word to db1",
 			"request": {
 				"method": "POST",
@@ -306,7 +343,12 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n\t\"size\": 1206751,\r\n    \"table_name\": \"DE_EN\"\r\n}"
+					"raw": "{\r\n\t\"note\": \"test insert dict\",\r\n    \"table_name\": \"_testDE_EN\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
 				},
 				"url": {
 					"raw": "http://127.0.0.1:5000/api/v1/dicts",
@@ -438,6 +480,82 @@
 						"v1",
 						"dicts",
 						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Search word",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/api/v1/search?keyword=therap&from=1.2&columns=w_id.word.meaning",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"v1",
+						"search"
+					],
+					"query": [
+						{
+							"key": "keyword",
+							"value": "therap"
+						},
+						{
+							"key": "from",
+							"value": "1.2"
+						},
+						{
+							"key": "columns",
+							"value": "w_id.word.meaning"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Search in all DB",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/api/v1/search?keyword=therap&from=all&columns=w_id.word.meaning",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"v1",
+						"search"
+					],
+					"query": [
+						{
+							"key": "keyword",
+							"value": "therap"
+						},
+						{
+							"key": "from",
+							"value": "all"
+						},
+						{
+							"key": "columns",
+							"value": "w_id.word.meaning"
+						}
 					]
 				}
 			},

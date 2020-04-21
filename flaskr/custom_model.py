@@ -3,12 +3,6 @@ import datetime, time
 import re
 import traceback
 
-def dict_factory_custom(cursor, row):
-    d = {}
-    for idx, col in enumerate(cursor.description):
-        d[col[0]] = row[idx]
-    return d
-
 def construct_record_tuple(records, include_wid=True, wid_none=True, only_exist=False):
     '''
     @param wid_none Set w_id None no matter which value in w_id was supplied
@@ -246,14 +240,24 @@ class TB_VocabularyCollection:
     # SELECT *,"FR_EN" as table_name FROM FR_EN where word like "engi%"
     # UNION
     # SELECT *,"FR_DE" as table_name FROM FR_DE where word like "engi%"
-    def search_record_by_word(self, table_names=[""], select_what="*", keyword=""):
+    def search_record_by_word(self, keyword, table_names=[""], columns="*", tables_and_ids=[]):
+        '''
+        @param table_names Using if search in tables in table_names. 
+                           Return value with description: from which table_name
+        @param tables_and_ids Like table_names but Return value with description: from which table_name and w_id 
+        '''
         query = ""
-        if len(table_names) == 1:
-            query +=    f"SELECT {select_what} FROM {table_names[0]}" + \
-                        f" WHERE word LIKE \"{keyword}\""
+        if len(tables_and_ids) > 0:
+            for r in tables_and_ids:
+                table_name = r["table_name"]
+                w_id = r["w_id"]
+                query +=    f"SELECT {columns}, \"{table_name}\" AS table_name, \"{w_id}\" AS table_w_id  " + \
+                            f"FROM {table_name}" + \
+                            f" WHERE word LIKE \"{keyword}\" UNION "
+            query = query[:-7] + ";"    # ' UNION '
         else:
             for table_name in table_names:
-                query +=    f"SELECT {select_what}, \"{table_name}\" AS table_name FROM {table_name}" + \
+                query +=    f"SELECT {columns}, \"{table_name}\" AS table_name FROM {table_name}" + \
                             f" WHERE word LIKE \"{keyword}\" UNION "
             query = query[:-7] + ";"    # ' UNION '
         print(query)

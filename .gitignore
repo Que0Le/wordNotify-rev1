@@ -13,7 +13,6 @@ build/
 *.swp
 *~
 .vscode/
-testdb.db
-testdb_2*.db
+*.db
 # FE
 node_modules

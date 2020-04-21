@@ -101,19 +101,6 @@ def app_settings():
         else:
             return jsonify({"status": error})
 
-@bp.route("/settings")
-@auth.login_required
-def settings_page():
-    return render_template("settings.html")
-
-@bp.route("/dicts/<int:dict_id>/words/word_id")
-@auth.login_required
-def view_word_page():
-    dict_dbname = getDictTableName(db, dict_id)
-    if not dict_dbname:
-        return page_not_found(404)
-    return render_template("view_word.html")
-
 @bp.route('/api/v1/dicts/<int:dict_id>/words', 
                     methods=['GET', 'POST', 'PUT'])
 def words_handler(dict_id):
@@ -147,8 +134,12 @@ def words_handler(dict_id):
         # TODO: verify r (word-class?)
         try:
             # by DB generated w_id will be written in returned json word
-            r["date_created"] = datetime.datetime.now()
+            now = datetime.datetime.now()
+            r["date_created"] = now
             inserted_r = m.insert_single_word_record(table_name=dict_dbname, record=r)
+            ### Update last_modified of dict table
+            m.update_word_table(
+                {"w_id": dict_id, "last_modified": now})
             return respSucc(inserted_r)
         except:
             print(traceback.format_exc())
@@ -157,17 +148,62 @@ def words_handler(dict_id):
     elif request.method == 'PUT':
         r = request.json
         # TODO: verify r (word-class?)
-        if ("w_id" not in r) or (not r["w_id"].isdigit()):
+        if ("w_id" not in r) or (not str(r["w_id"]).isdigit()):
             return respError(f"Digit word ID w_id not found in payload")
+        if str(r["w_id"]) != str(dict_id):
+            return respError(f"w_id differ in URL and payload")
         try:
-            r["last_modified"] = datetime.datetime.now()
+            now = datetime.datetime.now()
+            r["last_modified"] = now
             m.update_word_record(table_name=dict_dbname, record=r)
+            ### Update last_modified of dict table
+            m.update_word_table(
+                {"w_id": dict_id, "last_modified": now})
             return respSucc(r)
         except:
             print(traceback.format_exc())
             return respError(f"Error edit word with id {word_id} in database")
 
     return respError("unknow error")
+
+### Search endpoint
+@bp.route('/api/v1/search', methods=['GET'])
+@auth.login_required
+def search_word_handler():
+    db = get_db()
+    query_parameters = request.args
+    columns = "*"
+    if "columns" in query_parameters:
+        columns_raw = query_parameters.get('columns')
+        columns = ','.join(c for c in columns_raw.split("."))
+    m = custom_model.TB_VocabularyCollection(db, "")
+    inDB_tables = m.get_all_records_of_table(
+        table_name="ALL_DICTS", columns="w_id, table_name")
+    if len(inDB_tables)==0:
+        return respError(f"DB empty")
+    # dict_dbname = table_names[0]["table_name"]
+    tables_and_ids = []
+    table_ids_raw = query_parameters.get("from")
+    if table_ids_raw=="all":
+        tables_and_ids = inDB_tables
+    else:
+        table_ids = table_ids_raw.split(".")
+        # Filter out ids that doesn't exist in DB
+        for table_id in table_ids:
+            for inDB_table in inDB_tables:
+                if str(inDB_table["w_id"]) == table_id:
+                    tables_and_ids.append(inDB_table)
+    try:
+        keyword = "%"+query_parameters.get('keyword').replace("\"", "").replace("'", "").replace("+", " ")+"%"
+        r = m.search_record_by_word(
+            tables_and_ids=tables_and_ids, keyword=keyword, columns=columns)
+        if r:
+            return respSucc(r)
+        else:
+            return respError(f"Search done, not found {keyword} in {table_ids_raw}")
+    except:
+        print(traceback.format_exc())
+        return respError(f"Error searching in DB")
 
 
 @bp.route('/api/v1/dicts/<int:dict_id>/words/<word_id_raw>', 
@@ -178,6 +214,7 @@ def words_id_handler(dict_id, word_id_raw):
     # get word id from url
     word_id = None
     rand = None
+    search = None
     top, bot = None, None
     if word_id_raw=="":
         # Get all words in DB. 
@@ -186,6 +223,8 @@ def words_id_handler(dict_id, word_id_raw):
         word_id=int(word_id_raw)
     elif word_id_raw == "random":
         rand = True
+    elif word_id_raw == "search":
+        search = True
     else:
         temp = re.findall(r"([0-9]+)-([0-9]+)", word_id_raw)
         if len(temp) == 0:
@@ -202,24 +241,31 @@ def words_id_handler(dict_id, word_id_raw):
     table_names = m.get_records_with_ids(
         table_name="ALL_DICTS", ids=[dict_id], columns="table_name")
     if len(table_names)==0:
-        return respError(f"No dict with id {dict_id} found")
+        return respError(f"No dict in db {dict_id} found")
     dict_dbname = table_names[0]["table_name"]
     ############# GET###DONE
     if request.method == 'GET':
         try:
             if word_id:
-                r = m.get_records_with_ids(table_name=dict_dbname, ids=[word_id_raw], columns=columns)
+                r = m.get_records_with_ids(
+                    table_name=dict_dbname, ids=[word_id_raw], columns=columns)
             else:
                 if rand:
-                    random_where = f"rowid=(abs(random()) % (select (select max(rowid) from {dict_dbname}))+1)"
+                    random_where = f"rowid=(abs(random()) % \
+                        (select (select max(rowid) from {dict_dbname}))+1)"
                     r = m.get_records_with_custom_where(
                         table_name=dict_dbname, columns=columns, custom_where=random_where)
+                elif search:
+                    ### Search from here
+                    keyword = "%"+query_parameters.get('keyword').replace("\"", "").replace("'", "").replace("+", " ")+"%"
+                    r = m.search_record_by_word(
+                        table_names=[dict_dbname], keyword=keyword, columns=columns)
                 elif top and bot:
                     range_where = f"w_id between {bot} and {top}"
                     r = m.get_records_with_custom_where(
                         table_name=dict_dbname, columns=columns, custom_where=range_where)
                 else:
-                    return respError(f"Request error. Should e")
+                    return respError(f"Request error.")
 
             if r:
                 return respSucc(r)
@@ -276,11 +322,15 @@ def dicts_handler():
     ############# PUT
     elif request.method == 'PUT':
         r = request.json
-        if ("w_id" not in r) or (not r["w_id"].isdigit()):
+        if ("w_id" not in r) or (not str(r["w_id"]).isdigit()):
             return respError(f"Digit dict ID w_id not found in payload")
         try:
-            r["last_modified"] = datetime.datetime.now()
+            now = datetime.datetime.now()
+            r["last_modified"] = now
             m.update_word_table(record=r)
+            ### Update last_modified of dict table
+            m.update_word_table(
+                {"w_id": r["w_id"], "last_modified": now})
             return respSucc(r)
         except:
             print(traceback.format_exc())
