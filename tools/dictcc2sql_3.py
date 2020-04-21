@@ -10,7 +10,10 @@ con = sqlite3.connect("../testdb_3.db")
 con.execute(f"CREATE TABLE IF NOT EXISTS ALL_DICTS(\
     w_id integer PRIMARY KEY AUTOINCREMENT,\
     table_name text NOT NULL,\
-    size integer)")
+    note TEXT,\
+    description TEXT, \
+    date_created timestamp, \
+    last_modified timestamp)")
 
 def filebrowser(parents="", ext=""):
     "Returns files with an extension"
@@ -106,9 +109,8 @@ for file_path in x:
             i+=1
         con.executemany(querry, lines_arr)  # last iterator i%10000
         con.commit()
-        con.executemany("insert into ALL_DICTS(id, table_name, size) values (?,?,?)", [(None, table_name, i)])
+        con.executemany("insert into ALL_DICTS(w_id, table_name, date_created) values (?,?,?)", [(None, table_name, date_created)])
         con.commit()
-    break
 
 
     

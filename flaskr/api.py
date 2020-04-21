@@ -320,17 +320,17 @@ def dicts_handler():
     elif request.method == 'POST':
         r = request.json
         try:
-            c = db.cursor()
-            c.execute(f"insert into {all_dicts}( \
-                w_id, table_name, size \
-                ) values (?,?,?)", (None, r["table_name"], r["size"])
-            )
-            db.commit()
-            r["w_id"] = c.lastrowid
-            return respSucc(r)
+            # c = db.cursor()
+            # c.execute(f"insert into {all_dicts}( \
+            #     w_id, table_name, size \
+            #     ) values (?,?,?)", (None, r["table_name"], r["size"])
+            # )
+            # db.commit()
+            # r["w_id"] = c.lastrowid
+            # return respSucc(r)
             ####
-            # r["date_created"] = datetime.datetime.now()
-            # inserted_r = m.create_word_table(table_name=r["table_name"])
+            r["date_created"] = datetime.datetime.now()
+            inserted_r = m.create_word_table(record=r)
             return respSucc(inserted_r)
         except:
             print(traceback.format_exc())
@@ -342,19 +342,19 @@ def dicts_handler():
         if ("w_id" not in r) or (not r["w_id"].isdigit()):
             return respError(f"Digit dict ID w_id not found in payload")
         try:
-            db.execute(f"""update {all_dicts} \
-                set table_name=?, size=?\
-                where id=?
-                """, (r["table_name"], r["size"], r["w_id"])
-            )
-            db.commit()
-            return respSucc(r)
-            # r["last_modified"] = datetime.datetime.now()
-            # m.update_word_record(table_name=all_dicts, record=r)
+            # db.execute(f"""update {all_dicts} \
+            #     set table_name=?, size=?\
+            #     where id=?
+            #     """, (r["table_name"], r["size"], r["w_id"])
+            # )
+            # db.commit()
+            r["last_modified"] = datetime.datetime.now()
+            m.update_word_table(record=r)
             return respSucc(r)
         except:
             print(traceback.format_exc())
-            return respError(f"Error edit dict with id {dict_id} in database")
+            w_id = r["w_id"]
+            return respError(f"Error edit dict with id {w_id} in database")
 
     return respError("unknow error")
 

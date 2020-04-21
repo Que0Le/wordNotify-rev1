@@ -132,6 +132,59 @@ def construct_record_place_holder(record):
         r_record += f"last_modified=?,"
     return r_record[:-1]
 
+def construct_dict_table_record_tuple(records, include_wid=True, wid_none=True, only_exist=False):
+    '''
+    @param wid_none Set w_id None no matter which value in w_id was supplied
+    '''
+    r_records = []
+    if not only_exist:
+        for record in records:
+            w_id = None if ("w_id" not in record or wid_none) else record["w_id"]
+            table_name = "" if ("table_name" not in record) else record["table_name"]
+            note = "" if ("note" not in record) else record["note"]
+            description = "" if ("description" not in record) else record["description"]
+            date_created = "" if ("date_created" not in record) else record["date_created"]
+            last_modified = "" if ("last_modified" not in record) else record["last_modified"]
+            if include_wid:
+                r_records.append((w_id, table_name, note, description, date_created, last_modified))
+            else:
+                r_records.append((table_name, note, description, date_created, last_modified))
+    else:
+        for record in records:
+            r_record = []
+            if include_wid:
+                if ("w_id" in record):
+                    if not wid_none:
+                        r_record.append(record["w_id"])
+                    else: 
+                        r_record.append(None)
+            if ("table_name"  in record): 
+                r_record.append(record["table_name"])
+            if ("note"  in record): 
+                r_record.append(record["note"])
+            if ("description"  in record): 
+                r_record.append(record["description"])
+            if ("date_created"  in record): 
+                r_record.append(record["date_created"])
+            if ("last_modified"  in record): 
+                r_record.append(record["last_modified"])
+            r_records.append(r_record)
+    return r_records
+
+def construct_dict_table_record_place_holder(record):
+    r_record = ""
+    if ("table_name"  in record): 
+        r_record += f"table_name=?,"
+    if ("note"  in record): 
+        r_record += f"note=?,"
+    if ("description"  in record): 
+        r_record += f"description=?,"
+    if ("date_created"  in record): 
+        r_record += f"date_created=?,"
+    if ("last_modified"  in record): 
+        r_record += f"last_modified=?,"
+    return r_record[:-1]
+
 class TB_VocabularyCollection:
     def __init__(self, db, tableName=""):
         self.db = db
@@ -219,6 +272,9 @@ class TB_VocabularyCollection:
         self.db.commit()
 
     def insert_single_word_record(self, table_name="", record={}):
+        '''
+        Insert always need all columns
+        '''
         table_name = self.tableName if (table_name=="") else table_name
         querry = f"insert into {table_name}\
         (w_id, word, gender, w_types, features, also_form, long_form, plural, \
@@ -236,6 +292,9 @@ class TB_VocabularyCollection:
         return record
     
     def update_word_record(self, table_name="", record={}):
+        '''
+        UPDATE only need columns that were supplied
+        '''
         table_name = self.tableName if (table_name=="") else table_name
         w_id = record["w_id"]
         querry = f"UPDATE {table_name}\
@@ -251,7 +310,8 @@ class TB_VocabularyCollection:
         self.db.execute(querry)
         self.db.commit()
 
-    def create_word_table(self, table_name):
+    def create_word_table(self, record):
+        table_name = record["table_name"]
         self.db.execute(f"CREATE TABLE IF NOT EXISTS {table_name}( \
             w_id INTEGER PRIMARY KEY AUTOINCREMENT, \
             word TEXT NOT NULL, gender TEXT, w_types TEXT,\
@@ -262,15 +322,28 @@ class TB_VocabularyCollection:
             description TEXT, date_created timestamp, last_modified timestamp \
             )")
         self.db.commit()
-        self.db.execute(f"INSERT INTO ALL_DICTS (table_name) VALUES (\"{table_name}\")")
-        self.db.commit()
-        ##
-        # c = self.db.cursor()
-        # c.execute(querry, value)
-        # # self.db.execute(querry, value)
+        # self.db.execute(f"INSERT INTO ALL_DICTS (table_name, date_created) \
+        #                 VALUES (\"{table_name}\", \"{date_created}\")")
         # self.db.commit()
-        # record["w_id"] = str(c.lastrowid)
-        # return record
+        ##
+        values = construct_dict_table_record_tuple([record], include_wid=True, wid_none=True)[0]
+        querry = f"INSERT INTO ALL_DICTS ( \
+            w_id, table_name, note, description, date_created, last_modified) \
+            VALUES (?,?,?,?,?,?)"
+        c = self.db.cursor()
+        c.execute(querry, values)
+        self.db.commit()
+        record["w_id"] = str(c.lastrowid)
+        return record
+
+    def update_word_table(self, record):
+        w_id = record["w_id"]
+        querry = f"UPDATE ALL_DICTS \
+            SET {construct_dict_table_record_place_holder(record)}\
+            WHERE w_id=\"{str(w_id)}\""
+        values = tuple(construct_dict_table_record_tuple([record], include_wid=False, only_exist=True)[0])
+        self.db.execute(querry, values)
+        self.db.commit()
 
     def drop_word_table(self, table_name):
         self.db.execute(f"DROP TABLE IF EXISTS {table_name}")
