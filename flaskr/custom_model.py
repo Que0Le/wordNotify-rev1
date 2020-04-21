@@ -286,7 +286,6 @@ class TB_VocabularyCollection:
         value = construct_record_tuple([record], include_wid=True, wid_none=True)[0]
         c = self.db.cursor()
         c.execute(querry, value)
-        # self.db.execute(querry, value)
         self.db.commit()
         record["w_id"] = str(c.lastrowid)
         return record
@@ -322,9 +321,6 @@ class TB_VocabularyCollection:
             description TEXT, date_created timestamp, last_modified timestamp \
             )")
         self.db.commit()
-        # self.db.execute(f"INSERT INTO ALL_DICTS (table_name, date_created) \
-        #                 VALUES (\"{table_name}\", \"{date_created}\")")
-        # self.db.commit()
         ##
         values = construct_dict_table_record_tuple([record], include_wid=True, wid_none=True)[0]
         querry = f"INSERT INTO ALL_DICTS ( \
@@ -350,41 +346,3 @@ class TB_VocabularyCollection:
         self.db.commit()
         self.db.execute(f"DELETE FROM ALL_DICTS WHERE table_name=\"{table_name}\"")
         self.db.commit()
-
-# m = TB_VocabularyCollection(con, "")
-# print(m.get_all_records_of_table("ALL_DICTS"))
-# print(m.get_size_of_table("DE_EN"))
-# print(m.get_records_with_ids("DE_EN", [1,2,3,4], "w_id, word"))
-# print(m.get_records_with_ids_in_range("DE_EN", [1,2,3,4], "w_id, word"))
-
-# records=[{"w_id":1, "word": "tada"}, {"w_id":3, "word": "tada3"}]
-# record = {"w_id":1, "word": "tada2222222222"}
-
-### Test addd
-# try:
-#     m.create_word_table("test_table")
-#     m.insert_word_records(table_name="test_table", records=records)
-# except:
-#     print(traceback.format_exc())
-
-# Test drop
-# try:
-#     m.drop_word_table("test_table")
-# except:
-#     print(traceback.format_exc())
-
-### Test delete
-# try:
-#     m.delete_word_record(table_name="test_table", record=record)
-# except:
-#     print(traceback.format_exc())
-# print(construct_record_place_holder(record))
-# print(tuple(construct_record_tuple([record], include_wid=False, only_exist=True)[0]))
-
-
-# try:
-    # print(m.search_record_by_word(table_names=["EN_DE", "EN_FR", "DE_FR", "DE_EN", "FR_DE", "FR_EN"], keyword="%test%"))
-#     print(m.search_record_by_word(select_what="w_id", table_names=["EN_DE", "EN_FR", "DE_FR", "DE_EN", "FR_DE", "FR_EN"], keyword="%test%"))
-# except:
-#     print(traceback.format_exc())
-
