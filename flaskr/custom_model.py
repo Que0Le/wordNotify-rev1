@@ -260,7 +260,7 @@ class TB_VocabularyCollection:
                 query +=    f"SELECT {columns}, \"{table_name}\" AS table_name FROM {table_name}" + \
                             f" WHERE word LIKE \"{keyword}\" UNION "
             query = query[:-7] + ";"    # ' UNION '
-        print(query)
+        # print(query)
         r = self.db.execute(query).fetchall()
         return r
 

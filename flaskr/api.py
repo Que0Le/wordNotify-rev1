@@ -110,7 +110,7 @@ def words_handler(dict_id):
     columns = "*"
     if "columns" in query_parameters:
         columns_raw = query_parameters.get('columns')
-        columns = ','.join(c for c in columns_raw.split("."))
+        columns = ','.join(c for c in columns_raw.split(" "))
     table_names = m.get_records_with_ids(
         table_name="ALL_DICTS", ids=[dict_id], columns="table_name")
     if len(table_names)==0:
@@ -175,7 +175,7 @@ def search_word_handler():
     columns = "*"
     if "columns" in query_parameters:
         columns_raw = query_parameters.get('columns')
-        columns = ','.join(c for c in columns_raw.split("."))
+        columns = ','.join(c for c in columns_raw.split(" "))
     m = custom_model.TB_VocabularyCollection(db, "")
     inDB_tables = m.get_all_records_of_table(
         table_name="ALL_DICTS", columns="w_id, table_name")
@@ -187,7 +187,7 @@ def search_word_handler():
     if table_ids_raw=="all":
         tables_and_ids = inDB_tables
     else:
-        table_ids = table_ids_raw.split(".")
+        table_ids = table_ids_raw.split(" ")
         # Filter out ids that doesn't exist in DB
         for table_id in table_ids:
             for inDB_table in inDB_tables:
@@ -236,7 +236,7 @@ def words_id_handler(dict_id, word_id_raw):
     columns = "*"
     if "columns" in query_parameters:
         columns_raw = query_parameters.get('columns')
-        columns = ','.join(c for c in columns_raw.split("."))
+        columns = ','.join(c for c in columns_raw.split(" "))
     m = custom_model.TB_VocabularyCollection(db, "")
     table_names = m.get_records_with_ids(
         table_name="ALL_DICTS", ids=[dict_id], columns="table_name")
@@ -296,7 +296,7 @@ def dicts_handler():
     columns = "*"
     if "columns" in query_parameters:
         columns_raw = query_parameters.get('columns')
-        columns = ','.join(c for c in columns_raw.split("."))
+        columns = ','.join(c for c in columns_raw.split(" "))
     m = custom_model.TB_VocabularyCollection(db, "")
     ############# GET
     if request.method == 'GET':
@@ -368,7 +368,7 @@ def dicts_id_handler(dict_id_raw):
     columns = "*"
     if "columns" in query_parameters:
         columns_raw = query_parameters.get('columns')
-        columns = ','.join(c for c in columns_raw.split("."))
+        columns = ','.join(c for c in columns_raw.split(" "))
     ############# GET###DONE
     if request.method == 'GET':
         try:

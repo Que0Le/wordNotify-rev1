@@ -38,7 +38,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://127.0.0.1:5000/api/v1/dicts/1/words/random?columns=w_id.word.meaning",
+					"raw": "http://127.0.0.1:5000/api/v1/dicts/1/words/random?columns=w_id+word+meaning",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -58,7 +58,7 @@
 					"query": [
 						{
 							"key": "columns",
-							"value": "w_id.word.meaning"
+							"value": "w_id+word+meaning"
 						}
 					]
 				}
@@ -71,7 +71,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://127.0.0.1:5000/api/v1/dicts/1/words/100-105?columns=w_id.word.meaning",
+					"raw": "http://127.0.0.1:5000/api/v1/dicts/1/words/100-105?columns=w_id+word+meaning",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -91,7 +91,7 @@
 					"query": [
 						{
 							"key": "columns",
-							"value": "w_id.word.meaning"
+							"value": "w_id+word+meaning"
 						}
 					]
 				},
@@ -112,7 +112,7 @@
 					}
 				],
 				"url": {
-					"raw": "http://127.0.0.1:5000/api/v1/dicts/1/words/1?columns=w_id.word.meaning",
+					"raw": "http://127.0.0.1:5000/api/v1/dicts/1/words/1?columns=w_id+word+meaning",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -132,7 +132,7 @@
 					"query": [
 						{
 							"key": "columns",
-							"value": "w_id.word.meaning"
+							"value": "w_id+word+meaning"
 						}
 					]
 				}
@@ -145,7 +145,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://127.0.0.1:5000/api/v1/dicts/1/words/search?keyword=therap%&columns=w_id.word.meaning",
+					"raw": "http://127.0.0.1:5000/api/v1/dicts/1/words/search?keyword=therap&columns=w_id+word+meaning",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -165,11 +165,11 @@
 					"query": [
 						{
 							"key": "keyword",
-							"value": "therap%"
+							"value": "therap"
 						},
 						{
 							"key": "columns",
-							"value": "w_id.word.meaning"
+							"value": "w_id+word+meaning"
 						}
 					]
 				}
@@ -426,7 +426,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://127.0.0.1:5000/api/v1/dicts/1-5?columns=table_name.size",
+					"raw": "http://127.0.0.1:5000/api/v1/dicts/1-5?columns=table_name+note",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -444,7 +444,7 @@
 					"query": [
 						{
 							"key": "columns",
-							"value": "table_name.size"
+							"value": "table_name+note"
 						}
 					]
 				}
@@ -491,7 +491,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://127.0.0.1:5000/api/v1/search?keyword=therap&from=1.2&columns=w_id.word.meaning",
+					"raw": "http://127.0.0.1:5000/api/v1/search?keyword=therap&from=1+2&columns=w_id+word+meaning",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -512,11 +512,11 @@
 						},
 						{
 							"key": "from",
-							"value": "1.2"
+							"value": "1+2"
 						},
 						{
 							"key": "columns",
-							"value": "w_id.word.meaning"
+							"value": "w_id+word+meaning"
 						}
 					]
 				}
@@ -529,7 +529,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://127.0.0.1:5000/api/v1/search?keyword=therap&from=all&columns=w_id.word.meaning",
+					"raw": "http://127.0.0.1:5000/api/v1/search?keyword=therap&from=all&columns=w_id+word+meaning",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -554,7 +554,7 @@
 						},
 						{
 							"key": "columns",
-							"value": "w_id.word.meaning"
+							"value": "w_id+word+meaning"
 						}
 					]
 				}
