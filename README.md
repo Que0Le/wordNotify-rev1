@@ -39,17 +39,15 @@ chmod +x start_flask.sh
 # http://localhost:5000/api/v1/resources/dicts?dict_db=DE_FR&random=true
 ```
 
-# Setup for Windows 10: DO NOT USE POWERSHELL!!! USE CMD!
+# Setup for Windows 10: recommend CMD or [Powershell 7](https://github.com/PowerShell/PowerShell/releases)!
 ``` bash
 # Official guide: https://flask.palletsprojects.com/en/1.1.x/cli/#application-discovery
 python -m venv venv
 # CMD ONLY:
 venv\Scripts\activate.bat
+# POWERSHELL6/7: 
+./venv/Scripts/Activate.ps1
 # 'deactivate' to exit venv
-
-# venv\Scripts\activate.bat not work anymore with Windows PowerShell
-# Consider also 'Set-ExecutionPolicy Unrestricted -Force' if this line doesnt work
-# venv\Scripts\activate.ps1
 
 pip install -e .
 

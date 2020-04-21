@@ -9,7 +9,7 @@ import sqlite3
 import random
 import json
 import requests
-import os, time
+import os, time, datetime
 import threading, queue
 import re
 import itertools
@@ -22,6 +22,7 @@ from flask import request
 from flask import url_for
 from werkzeug.exceptions import abort
 from flaskr import handyfunctions
+from flaskr import custom_model
 
 from flaskr.auth import login_required
 from flaskr.db import get_db
@@ -29,7 +30,7 @@ from flask import current_app
 import traceback
 bp = Blueprint("api", __name__)
 
-MAX_DB_RANGE = 50000
+MAX_DB_RANGE = 50000    # max row return at once
 auth = HTTPBasicAuth()
 
 def dict_factory(cursor, row):
@@ -84,24 +85,11 @@ def available_dicts():
         print(traceback.format_exc())
         return page_not_found(404)
 
-test_settings = False
-temp_json = '''
-{
-    "notification": {
-        "dict_dbs_to_notify": [
-            "EN_DE",
-            "DE_EN",
-            "FR_EN"
-        ]
-    }
-}'''
 @bp.route('/api/v1/settings', methods=['GET', 'POST'])
 @auth.login_required
 def app_settings():
     if request.method == 'GET':
         global_config = current_app.config["GLOBAL_CONFIG"]
-        if test_settings:
-            return json.loads(temp_json)
         return global_config
     elif request.method == 'POST':
         new_config = request.json
@@ -130,55 +118,78 @@ def view_word_page():
                     methods=['GET', 'POST', 'PUT'])
 def words_handler(dict_id):
     db = get_db()
-    dict_dbname = getDictTableName(db, dict_id)
-    if not dict_dbname:
-        return respSucc("dict id not found in database")
-    ############# GET
+    m = custom_model.TB_VocabularyCollection(db, "")
+    query_parameters = request.args
+    columns = "*"
+    if "columns" in query_parameters:
+        columns_raw = query_parameters.get('columns')
+        columns = ','.join(c for c in columns_raw.split("."))
+    table_names = m.get_records_with_ids(
+        table_name="ALL_DICTS", ids=[dict_id], columns="table_name")
+    if len(table_names)==0:
+        return respError(f"No dict with id {dict_id} found")
+    dict_dbname = table_names[0]["table_name"]
+    # print(dict_dbname)
+    # dict_dbname = getDictTableName(db, dict_id)
+    # if not dict_dbname:
+    #     return respSucc("dict id not found in database")
+    ############# GET###DONE
     if request.method == 'GET':
         try:
             print(f"getting all words for dict_id {dict_id}")
-            r = db.execute(f"select max(rowid) from {dict_dbname};\
-                ").fetchone()
-            if int(r["max(rowid)"]) > MAX_DB_RANGE:
+            # r = db.execute(f"select max(rowid) from {dict_dbname};\
+            #     ").fetchone()
+            s = m.get_size_of_table(table_name=dict_dbname)
+            # if int(r["max(rowid)"]) > MAX_DB_RANGE:
+            if int(s) > MAX_DB_RANGE:
                 return respError(f"DB too big. Break into range {MAX_DB_RANGE}: /words/1-{MAX_DB_RANGE}")
-            r = db.execute(f"select * from {dict_dbname} where true;\
-                ").fetchall()
+            # r = db.execute(f"select * from {dict_dbname} where true;\
+            #     ").fetchall()
+            r = m.get_all_records_of_table(table_name=dict_dbname, columns=columns)
             return respSucc(r)
         except:
             print(traceback.format_exc())
             return respError(f"error getting words for dict_id {dict_id}")
-    ############# POST
+    ############# POST###DONE
     elif request.method == 'POST':
         r = request.json
         # TODO: verify r (word-class?)
         try:
-            c = db.cursor()
-            c.execute(f"insert into {dict_dbname}( \
-                id, line, note, description, date_created, last_modified \
-                ) values (?,?,?,?,?,?)", (
-                    None, r["line"], r["note"], r["description"], 
-                    r["date_created"], r["last_modified"])
-                )
-            db.commit()
-            r["id"] = c.lastrowid
-            return respSucc(r)
+            # c = db.cursor()
+            # c.execute(f"insert into {dict_dbname}( \
+            #     id, line, note, description, date_created, last_modified \
+            #     ) values (?,?,?,?,?,?)", (
+            #         None, r["line"], r["note"], r["description"], 
+            #         r["date_created"], r["last_modified"])
+            #     )
+            # db.commit()
+            # r["id"] = c.lastrowid
+
+            # by DB generated w_id will be written in returned json word
+            r["date_created"] = datetime.datetime.now()
+            inserted_r = m.insert_single_word_record(table_name=dict_dbname, record=r)
+            return respSucc(inserted_r)
         except:
             print(traceback.format_exc())
             return respError("Error write word to database")
-    ############# PUT
+    ############# PUT###DONE
     elif request.method == 'PUT':
         r = request.json
         # TODO: verify r (word-class?)
-        word_id = r["id"]
+        # word_id = r["id"]
+        if ("w_id" not in r) or (not r["w_id"].isdigit()):
+            return respError(f"Digit word ID w_id not found in payload")
         try:
-            db.execute(f"""update {dict_dbname} \
-                set line=?, note=?, description=?, date_created=?, last_modified=? \
-                where id=?
-                """, (
-                    r["line"], r["note"], r["description"], 
-                    r["date_created"], r["last_modified"], word_id)
-            )
-            db.commit()
+            # db.execute(f"""update {dict_dbname} \
+            #     set line=?, note=?, description=?, date_created=?, last_modified=? \
+            #     where id=?
+            #     """, (
+            #         r["line"], r["note"], r["description"], 
+            #         r["date_created"], r["last_modified"], word_id)
+            # )
+            # db.commit()
+            r["last_modified"] = datetime.datetime.now()
+            m.update_word_record(table_name=dict_dbname, record=r)
             return respSucc(r)
         except:
             print(traceback.format_exc())
@@ -188,13 +199,14 @@ def words_handler(dict_id):
 
 
 @bp.route('/api/v1/dicts/<int:dict_id>/words/<word_id_raw>', 
-                    methods=['GET', 'POST', 'PUT', 'DELETE'])
+                    methods=['GET', 'DELETE'])
 @auth.login_required
 def words_id_handler(dict_id, word_id_raw):
     db = get_db()
-    dict_dbname = getDictTableName(db, dict_id)
-    if not dict_dbname:
-        return respSucc("dict id not found in database")
+    # dict_dbname = getDictTableName(db, dict_id)
+    # if not dict_dbname:
+    #     return respSucc("dict id not found in database")
+
     # get word id from url
     word_id = None
     rand = None
@@ -213,21 +225,42 @@ def words_id_handler(dict_id, word_id_raw):
         (bot, top) = temp[0]
         if abs(int(top)-int(bot)) > MAX_DB_RANGE:
             return respError(f"DB too big. Break into range {MAX_DB_RANGE}: /words/1-{MAX_DB_RANGE}")
-    ############# GET
+    query_parameters = request.args
+    columns = "*"
+    if "columns" in query_parameters:
+        columns_raw = query_parameters.get('columns')
+        columns = ','.join(c for c in columns_raw.split("."))
+    m = custom_model.TB_VocabularyCollection(db, "")
+    table_names = m.get_records_with_ids(
+        table_name="ALL_DICTS", ids=[dict_id], columns="table_name")
+    if len(table_names)==0:
+        return respError(f"No dict with id {dict_id} found")
+    dict_dbname = table_names[0]["table_name"]
+    ############# GET###DONE
     if request.method == 'GET':
         try:
             if word_id:
-                r = db.execute(f"select * from {dict_dbname} where \
-                    id={word_id};").fetchone()
+                # r = db.execute(f"select * from {dict_dbname} where \
+                #     id={word_id};").fetchone()
+                r = m.get_records_with_ids(table_name=dict_dbname, ids=[word_id_raw], columns=columns)
             else:
                 if rand:
-                    r = db.execute(f"select * from {dict_dbname} where \
-                        rowid=(abs(random()) % (select (select max(rowid) from {dict_dbname}))+1);\
-                        ").fetchone()
+                    # r = db.execute(f"select * from {dict_dbname} where \
+                    #     rowid=(abs(random()) % (select (select max(rowid) from {dict_dbname}))+1);\
+                    #     ").fetchone()
+                    random_where = f"rowid=(abs(random()) % (select (select max(rowid) from {dict_dbname}))+1)"
+                    r = m.get_records_with_custom_where(
+                        table_name=dict_dbname, columns=columns, custom_where=random_where)
                 elif top and bot:
-                    r = db.execute(f"SELECT * FROM {dict_dbname} WHERE \
-                        id between {bot} and {top};\
-                        ").fetchall()
+                    # r = db.execute(f"SELECT * FROM {dict_dbname} WHERE \
+                    #     id between {bot} and {top};\
+                    #     ").fetchall()
+                    range_where = f"w_id between {bot} and {top}"
+                    r = m.get_records_with_custom_where(
+                        table_name=dict_dbname, columns=columns, custom_where=range_where)
+                else:
+                    return respError(f"Request error. Should e")
+
             if r:
                 return respSucc(r)
             else:
@@ -235,14 +268,15 @@ def words_id_handler(dict_id, word_id_raw):
         except:
             print(traceback.format_exc())
             return respError(f"error getting {word_id_raw}")
-    ############# DEL
+    ############# DEL###DONE
     elif request.method == 'DELETE':
-        if not word_id:
+        if word_id_raw=="":
             return respError("word id not supplied")
         try:
-            db.execute(f"delete from {dict_dbname} where \
-                id={word_id}")
-            db.commit()
+            # db.execute(f"delete from {dict_dbname} where \
+            #     id={word_id}")
+            # db.commit()
+            m.delete_word_record(table_name=dict_dbname, w_id=word_id_raw)
             return respSucc(word_id)
         except:
             print(traceback.format_exc())
@@ -254,16 +288,30 @@ def words_id_handler(dict_id, word_id_raw):
 @auth.login_required
 def dicts_handler():
     db = get_db()
-    dict_dbname = "ALL_DICTS"
+    all_dicts = "ALL_DICTS"
+    query_parameters = request.args
+    columns = "*"
+    if "columns" in query_parameters:
+        columns_raw = query_parameters.get('columns')
+        columns = ','.join(c for c in columns_raw.split("."))
+    m = custom_model.TB_VocabularyCollection(db, "")
+    # table_names = m.get_records_with_ids(
+    #     table_name="ALL_DICTS", ids=[dict_id], columns="table_name")
+    # if len(table_names)==0:
+    #     return respError(f"No dict with id {dict_id} found")
+    # dict_dbname = table_names[0]["table_name"]
     ############# GET
     if request.method == 'GET':
         try:
-            r = db.execute(f"select max(rowid) from {dict_dbname};\
-                ").fetchone()
-            if int(r["max(rowid)"]) > MAX_DB_RANGE:
+            # r = db.execute(f"select max(rowid) from {all_dicts};\
+            #     ").fetchone()
+            # if int(r["max(rowid)"]) > MAX_DB_RANGE:
+            s = m.get_size_of_table(table_name=all_dicts)
+            if int(s) > MAX_DB_RANGE:
                 return respError(f"DB too big. Break into range {MAX_DB_RANGE}: /dicts/1-{MAX_DB_RANGE}")
-            r = db.execute(f"select * from {dict_dbname} where true;\
-                ").fetchall()
+            # r = db.execute(f"select * from {all_dicts} where true;\
+            #     ").fetchall()
+            r = m.get_all_records_of_table(table_name=all_dicts, columns=columns)
             return respSucc(r)
         except: 
             print(traceback.format_exc())
@@ -273,27 +321,36 @@ def dicts_handler():
         r = request.json
         try:
             c = db.cursor()
-            c.execute(f"insert into {dict_dbname}( \
-                id, table_name, size \
+            c.execute(f"insert into {all_dicts}( \
+                w_id, table_name, size \
                 ) values (?,?,?)", (None, r["table_name"], r["size"])
             )
             db.commit()
-            r["id"] = c.lastrowid
+            r["w_id"] = c.lastrowid
             return respSucc(r)
+            ####
+            # r["date_created"] = datetime.datetime.now()
+            # inserted_r = m.create_word_table(table_name=r["table_name"])
+            return respSucc(inserted_r)
         except:
             print(traceback.format_exc())
             return respError("Error POST dict to database")
     ############# PUT
     elif request.method == 'PUT':
         r = request.json
-        dict_id = r["id"]
+        # dict_id = r["id"]
+        if ("w_id" not in r) or (not r["w_id"].isdigit()):
+            return respError(f"Digit dict ID w_id not found in payload")
         try:
-            db.execute(f"""update {dict_dbname} \
+            db.execute(f"""update {all_dicts} \
                 set table_name=?, size=?\
                 where id=?
-                """, (r["table_name"], r["size"], dict_id)
+                """, (r["table_name"], r["size"], r["w_id"])
             )
             db.commit()
+            return respSucc(r)
+            # r["last_modified"] = datetime.datetime.now()
+            # m.update_word_record(table_name=all_dicts, record=r)
             return respSucc(r)
         except:
             print(traceback.format_exc())
@@ -302,12 +359,11 @@ def dicts_handler():
     return respError("unknow error")
 
 
-@bp.route('/api/v1/dicts/<dict_id_raw>', methods=['GET', 'POST', 'PUT', 'DELETE'])
+@bp.route('/api/v1/dicts/<dict_id_raw>', methods=['GET', 'DELETE'])
 @auth.login_required
 def dicts_id_handler(dict_id_raw):
     db = get_db()
-    dict_dbname = "ALL_DICTS"
-    ############# TEST
+    all_dicts = "ALL_DICTS"
     dict_id = None
     rand = None
     top, bot = None, None
@@ -322,37 +378,58 @@ def dicts_id_handler(dict_id_raw):
     else:
         temp = re.findall(r"([0-9]+)-([0-9]+)", dict_id_raw)
         if len(temp) == 0:
-            return respError("dict_id must be numberic or range 123-456")
+            return respError("dict_id must be numberic or range (i.e 123-456)")
         (bot, top) = temp[0]
         if abs(int(top)-int(bot)) > MAX_DB_RANGE:
             return respError(f"DB too big. Break into range {MAX_DB_RANGE}: /words/1-{MAX_DB_RANGE}")
-    ############# GET
+    m = custom_model.TB_VocabularyCollection(db, "")
+    query_parameters = request.args
+    columns = "*"
+    if "columns" in query_parameters:
+        columns_raw = query_parameters.get('columns')
+        columns = ','.join(c for c in columns_raw.split("."))
+    ############# GET###DONE
     if request.method == 'GET':
         try:
             if dict_id:
-                r = db.execute(f"select * from {dict_dbname} where \
-                    id={dict_id};").fetchone()
+                # r = db.execute(f"select * from {dict_dbname} where \
+                #     id={dict_id};").fetchone()
+                r = m.get_records_with_ids(table_name=all_dicts, ids=[dict_id], columns=columns)
             else:
                 if rand:
-                    r = db.execute(f"select * from {dict_dbname} where \
-                        rowid=(abs(random()) % (select (select max(rowid) from {dict_dbname}))+1);\
-                        ").fetchone()
+                    #TODO: bug if ALL_DICTS was add/delete before, may return []
+
+                    # r = db.execute(f"select * from {dict_dbname} where \
+                    #     rowid=(abs(random()) % (select (select max(rowid) from {dict_dbname}))+1);\
+                    #     ").fetchone()
+                    r = m.get_records_with_custom_where(table_name=all_dicts, columns=columns,
+                        custom_where=f"rowid=(abs(random()) % (select (select max(rowid) from {all_dicts}))+1)")
+
                 elif top and bot:
-                    r = db.execute(f"SELECT * FROM {dict_dbname} WHERE \
-                        id between {bot} and {top};\
-                        ").fetchall()
+                    # r = db.execute(f"SELECT * FROM {dict_dbname} WHERE \
+                    #     id between {bot} and {top};\
+                    #     ").fetchall()
+                    r = m.get_records_with_custom_where(table_name=all_dicts, columns=columns,
+                        custom_where=f"w_id between {bot} and {top}")
             return respSucc(r)
         except:
             print(traceback.format_exc())
             return respError(f"error getting {dict_id_raw}")
-    ############# DEL
+    ############# DEL###DONE
     elif request.method == 'DELETE':
         if not dict_id:
             return respError("dict id not supplied")
         try:
-            db.execute(f"delete from {dict_dbname} where \
-                id={dict_id}")
-            db.commit()
+            # db.execute(f"delete from {dict_dbname} where \
+            #     id={dict_id}")
+            # db.commit()
+            #### Get table name:
+            table_names = m.get_records_with_ids(
+                table_name="ALL_DICTS", ids=[dict_id], columns="table_name"
+                )
+            if len(table_names)==0:
+                return respError(f"No dict with id {dict_id} found")
+            m.drop_word_table(table_name=table_names[0]["table_name"])
             return respSucc(dict_id)
         except:
             print(traceback.format_exc())

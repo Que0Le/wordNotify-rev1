@@ -34,7 +34,7 @@
         "API_password": "thisIStom",
         "API_username": "tom",
         "NotifierThead_sleep_iterator_sec": 5,
-        "db_file": "testdb_2.db",
+        "db_file": "testdb_3.db",
         "debug": true,
         "user_reloader": true
     },
