@@ -4,6 +4,12 @@
             "EN_DE",
             "DE_EN",
             "FR_EN"
+        ],
+        "entries_to_notify": [
+            "word",
+            "w_types",
+            "gender",
+            "meaning"
         ]
     },
     "online_sources": [

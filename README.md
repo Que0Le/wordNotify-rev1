@@ -24,7 +24,7 @@ python3 -m pip install plyer
 
 # Create DB
 cd tools/
-python3 dictcc2sql_2.py
+python3 dictcc2sql_3.py
 
 # Run this once
 cd ..
@@ -39,15 +39,15 @@ chmod +x start_flask.sh
 # http://localhost:5000/api/v1/resources/dicts?dict_db=DE_FR&random=true
 ```
 
-# Setup for Windows 10: recommend CMD or [Powershell 7](https://github.com/PowerShell/PowerShell/releases)!
+# Setup for Windows 10: recommend CMD 
 ``` bash
 # Official guide: https://flask.palletsprojects.com/en/1.1.x/cli/#application-discovery
 python -m venv venv
 # CMD ONLY:
 venv\Scripts\activate.bat
-# POWERSHELL6/7: 
-./venv/Scripts/Activate.ps1
-# 'deactivate' to exit venv
+# POWERSHELL6/7: [Powershell 7](https://github.com/PowerShell/PowerShell/releases)!
+# Can active the venv, but can not init-db. Don't use this.
+# ./venv/Scripts/Activate.ps1
 
 pip install -e .
 
@@ -57,7 +57,7 @@ python -m pip install git+https://github.com/Charnelx/Windows-10-Toast-Notificat
 
 # Create DB
 cd tools/
-python dictcc2sql_2.py
+python dictcc2sql_3.py
 
 cd ..
 # Register env
@@ -88,7 +88,7 @@ python -m pip install git+https://github.com/Charnelx/Windows-10-Toast-Notificat
 
 # Create DB
 cd tools/
-python dictcc2sql_2.py
+python dictcc2sql_3.py
 
 cd ..
 # Register env
@@ -128,7 +128,7 @@ python3 -m pip install plyer
 
 # Create DB
 cd tools/
-python3 dictcc2sql_2.py
+python3 dictcc2sql_3.py
 
 cd ..
 # Run this once
@@ -146,17 +146,3 @@ chmod +x start_flask.sh
 
 ---------------------------------------------
 <br>
-# DONT TOUCH THIS
-
-``` bash
-# packging
-pip install pyinstaller
-pyinstaller yourprogram.py
-```
-
-Some example:
-``` bash
-# Enter this in browser
-http://127.0.0.1:5000/api/v1/resources/dicts?dict_db=DE_FR&random=true
-http://127.0.0.1:5000/api/v1/resources/settings
-```

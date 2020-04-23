@@ -1,10 +1,7 @@
 import os, time
 import random
 import threading, queue
-# from handyfunctions import *
 from flaskr import handyfunctions
-# from flaskr import handyfunctions
-# from flask import plyer
 from sys import platform
 import webbrowser
 # The other candidate for notification windows is https://github.com/malja/zroya
@@ -16,11 +13,6 @@ from flask import current_app
 class SettingFile():
     def __init__(self):
         self.isLocking = False
-
-    def parseConfig(self, config=None):
-        config = self.readConfigFile()
-        print(config)
-        print(config["system_notification"]["enable"])
 
     def readConfigFile(self, filename="config.json"):
         if self.isLocking == True:
@@ -47,54 +39,8 @@ class SettingFile():
             return ""
         return "Verify failed. Check input."
 
-
-class WorkerThread(threading.Thread):
-    """ A worker thread that takes directory names from a queue, finds all
-        files in them recursively and reports the result.
-
-        Input is done by placing directory names (as strings) into the
-        Queue passed in dir_q.
-
-        Output is done by placing tuples into the Queue passed in result_q.
-        Each tuple is (thread name, dirname, [list of files]).
-
-        Ask the thread to stop by calling its join() method.
-    """
-    def __init__(self, app):
-        super(WorkerThread, self).__init__()
-        self.app = app
-        self.daemon = True
-        self.stoprequest = threading.Event()
-
-    def run(self):
-        # As long as we weren't asked to stop, try to take new tasks from the
-        # queue. The tasks are taken with a blocking 'get', so no CPU
-        # cycles are wasted while waiting.
-        # Also, 'get' is given a timeout, so stoprequest is always checked,
-        # even if there's nothing in the queue.
-
-        with self.app.app_context():
-            while not self.stoprequest.isSet():
-                # print("from thread "+ str(threading.currentThread().getName()) + 
-                #         " WorkerThread GLOBAL_CONFIG: " + 
-                #         str(current_app.config['GLOBAL_CONFIG']))
-                time.sleep(1)
-    def join(self, timeout=None):
-        self.stoprequest.set()
-        super(WorkerThread, self).join(timeout)
-
-
 class NotifierThead(threading.Thread):
-    """ A worker thread that takes directory names from a queue, finds all
-        files in them recursively and reports the result.
-
-        Input is done by placing directory names (as strings) into the
-        Queue passed in dir_q.
-
-        Output is done by placing tuples into the Queue passed in result_q.
-        Each tuple is (thread name, dirname, [list of files]).
-
-        Ask the thread to stop by calling its join() method.
+    """ A worker thread that takes care of system notification 
     """
     def __init__(self, app):
         super(NotifierThead, self).__init__()
@@ -139,7 +85,7 @@ class NotifierThead(threading.Thread):
                         continue
                     for r in json_response["response"]:
                         if r["table_name"] == rand_dict_name:
-                            rand_dict_id = r["id"]
+                            rand_dict_id = r["w_id"]
                             break
                     if rand_dict_id<0:
                         print(f"dict with name {rand_dict_name} not found in server!")
@@ -155,14 +101,20 @@ class NotifierThead(threading.Thread):
                     continue
                 # Push notification
                 # TODO: Consider a while True here to prevent exception db busy (openned by other thread)
-                notify_wid = json_response["response"]["id"]
-                notify_content = json_response["response"]["line"]
+                notify_w_id = json_response["response"][0]["w_id"]
+                title_name = global_config["notification"]["entries_to_notify"][0]
+                notify_title = json_response["response"][0][title_name] + f" (from {rand_dict_name})"
+                notify_content = ""
+                for entry in global_config["notification"]["entries_to_notify"][1:]:
+                    if json_response["response"][0][entry]:
+                        notify_content += json_response["response"][0][entry] + "\n"
+                
                 if platform == "linux":
                     from plyer import notification
                     try:
                         notification.notify(
-                            title='id: {0}'.format(notify_wid),
-                            message='content: {0}'.format(notify_content),
+                            title=notify_title,
+                            message=notify_content,
                             app_name='wordNotify',
                             # app_icon="beat_brick.ico",  # e.g. 'C:\\icon_32x32.ico'
                             timeout=global_config["system_notification"]["duration_sec"],
@@ -180,8 +132,8 @@ class NotifierThead(threading.Thread):
                         elif notify_methods["plyer"]:
                             from plyer import notification
                             notification.notify(
-                                title='id: {0}'.format(notify_wid),
-                                message='content: {0}'.format(notify_content),
+                                title=notify_title,
+                                message=notify_content,
                                 app_name='wordNotify',
                                 # app_icon="beat_brick.ico",  # e.g. 'C:\\icon_32x32.ico'
                                 timeout=global_config["system_notification"]["duration_sec"],
@@ -194,13 +146,11 @@ class NotifierThead(threading.Thread):
                     from win10toast import ToastNotifier
                     toast = ToastNotifier()
                     try:
-                        # url = http://127.0.0.1:5000/api/v1/dicts/6/words/random
-                        # u = http://127.0.0.1:5000/api/v1/dicts/6/words/20906
-                        # u = url_full.rsplit('/', 1)[0] + "/" + str(notify_wid)
-                        u = handyfunctions.url_base + "/dicts/" + str(rand_dict_id) + "/words/" + str(notify_wid)
+                        # http://127.0.0.1:5000/dicts/6/words/13359
+                        u = handyfunctions.url_base + "/dicts/" + str(rand_dict_id) + "/words/" + str(notify_w_id)
                         toast.show_toast(
-                            title='id: {0}'.format(notify_wid),
-                            msg='content: {0}'.format(notify_content),
+                            title=notify_title,
+                            msg=notify_content,
                             icon_path=None,
                             duration=global_config["system_notification"]["duration_sec"],
                             threaded=False,
@@ -208,6 +158,7 @@ class NotifierThead(threading.Thread):
                     except Exception:
                         traceback.print_exc()
                         print('error: creating windows toast notification')
+
                 # Update last notification time to "now"
                 last_show = now
 
