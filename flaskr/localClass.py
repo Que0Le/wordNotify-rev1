@@ -120,6 +120,7 @@ class NotifierThead(threading.Thread):
                         notify_content += json_response["response"][0][entry] + "\n"
                 # Construct link onclick
                 u = handyfunctions.url_base + "/api/v1/dicts/" + str(rand_dict_id) + "/words/" + str(notify_w_id)
+                ##########################
                 if platform == "linux":
                     from plyer import notification
                     try:
@@ -133,7 +134,7 @@ class NotifierThead(threading.Thread):
                     except Exception:
                         traceback.print_exc()
                         print('error: creating linux notification')
-
+                ##########################
                 elif platform == "darwin":
                     try:
                         if notify_methods["terminal-notifier"]:
@@ -152,12 +153,11 @@ class NotifierThead(threading.Thread):
                     except Exception:
                         traceback.print_exc()
                         print('error: creating macos notification')
-
+                ##########################
                 elif platform == "win32":
                     from win10toast import ToastNotifier
                     toast = ToastNotifier()
                     try:
-                        # http://127.0.0.1:5000/dicts/6/words/13359
                         toast.show_toast(
                             title=notify_title,
                             msg=notify_content,
