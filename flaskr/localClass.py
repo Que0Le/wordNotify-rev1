@@ -137,10 +137,11 @@ class NotifierThead(threading.Thread):
                 ##########################
                 elif platform == "darwin":
                     try:
+                        notify_methods = global_config["system_notification"]["methods"]["macos"]
                         if notify_methods["terminal-notifier"]:
                             os.system("""
                             terminal-notifier -title '{}' -message '{}' -open '{}'
-                            """.format(notify_wid, notify_content, url_full.rsplit('/', 1)[0] + "/" + str(notify_wid)))
+                            """.format(notify_title, notify_content, u))
                         elif notify_methods["plyer"]:
                             from plyer import notification
                             notification.notify(

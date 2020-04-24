@@ -2,7 +2,7 @@
 
 import flask
 from flask import request, jsonify
-from flask import render_template, request
+from flask import render_template
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
@@ -18,7 +18,6 @@ from flask import flash
 from flask import g
 from flask import redirect
 from flask import render_template
-from flask import request
 from flask import url_for
 from werkzeug.exceptions import abort
 from flaskr import handyfunctions
@@ -38,19 +37,6 @@ def dict_factory(cursor, row):
     for idx, col in enumerate(cursor.description):
         d[col[0]] = row[idx]
     return d
-
-def getTablesInfo():
-    conn = sqlite3.connect('testdb.db')
-    conn.row_factory = dict_factory
-    cur = conn.cursor()     
-    all_dicts = cur.execute("SELECT * FROM ALL_DICTS;").fetchall()
-    return all_dicts
-
-def getDictTableName(db, dict_id):
-    r = db.execute(f"select table_name from ALL_DICTS where id={dict_id}").fetchone()
-    if r:
-        return r["table_name"]
-    return None
 
 def respError(mess):
     return jsonify({"response": mess, "status": "error"})
@@ -162,7 +148,8 @@ def words_handler(dict_id):
             return respSucc(r)
         except:
             print(traceback.format_exc())
-            return respError(f"Error edit word with id {word_id} in database")
+            w_id = str(r["w_id"])
+            return respError(f"Error edit word with id {w_id} in database")
 
     return respError("unknow error")
 
@@ -280,10 +267,10 @@ def words_id_handler(dict_id, word_id_raw):
             return respError("word id not supplied")
         try:
             m.delete_word_record(table_name=dict_dbname, w_id=word_id_raw)
-            return respSucc(word_id)
+            return respSucc(word_id_raw)
         except:
             print(traceback.format_exc())
-            return respError(f"error deleting word id {word_id}")
+            return respError(f"error deleting word id {word_id_raw}")
 
     return respError("unknow error")
 

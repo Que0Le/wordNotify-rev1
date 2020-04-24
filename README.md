@@ -32,11 +32,6 @@ chmod +x start_flask.sh
 
 # From now to start server:
 ./start_flask.sh
-
-# Testing url
-# http://localhost:5000/
-# http://localhost:5000/api/v1/resources/settings
-# http://localhost:5000/api/v1/resources/dicts?dict_db=DE_FR&random=true
 ```
 
 # Setup for Windows 10: recommend CMD 
@@ -68,11 +63,6 @@ flask init-db
 
 # From now run:
 flask run --no-reload --host=0.0.0.0
-
-# Testing url
-# http://localhost:5000/
-# http://localhost:5000/api/v1/resources/settings
-# http://localhost:5000/api/v1/resources/dicts?dict_db=DE_FR&random=true
 ```
 
 # Setup for Windows 7
@@ -99,11 +89,6 @@ flask init-db
 
 # From now run:
 flask run --no-reload --host=0.0.0.0
-
-# Testing url
-# http://localhost:5000/
-# http://localhost:5000/api/v1/resources/settings
-# http://localhost:5000/api/v1/resources/dicts?dict_db=DE_FR&random=true
 ```
 
 
@@ -118,12 +103,15 @@ pip install -e .
 # Dependencies. TODO: add those packages to setup.cfg
 # We need now:
 python3 -m pip install flask flask_httpauth flask_cors
+
+##### THIS
+# terminal-notifier offers much better features. default choice...
+brew install terminal-notifier
+
+# ... OR THIS:
+# crossplatform plyer. Set in config.json.
 python3 -m pip install Cython
 python3 -m pip install git+http://github.com/kivy/pyobjus/ #--user #macos
-
-# terminal-notifier offer much better features. default choice...
-brew install terminal-notifier
-# ... OR crossplatform plyer. Set in config.json.
 python3 -m pip install plyer
 
 # Create DB
@@ -136,11 +124,6 @@ chmod +x start_flask.sh
 
 # From now to start server:
 ./start_flask.sh
-
-# Testing url
-# http://localhost:5000/
-# http://localhost:5000/api/v1/resources/settings
-# http://localhost:5000/api/v1/resources/dicts?dict_db=DE_FR&random=true
 ```
 
 
