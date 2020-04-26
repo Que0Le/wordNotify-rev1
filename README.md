@@ -103,6 +103,7 @@ pip install -e .
 # Dependencies. TODO: add those packages to setup.cfg
 # We need now:
 python3 -m pip install flask flask_httpauth flask_cors
+python3 -m pip install requests
 
 ##### THIS
 # terminal-notifier offers much better features. default choice...
