@@ -1,14 +1,9 @@
 import { autoinject } from 'aurelia-framework';
-import { PLATFORM } from 'aurelia-pal';
-import { httpClient } from './common/http-client';
-import { EventAggregator, Subscription } from 'aurelia-event-aggregator';
-
-interface ISourceSetting {
-  name: string
-  link: string
-}
-
+import { Subscription, EventAggregator } from 'aurelia-event-aggregator';
 import { RouterConfiguration, Router, RouterEvent } from 'aurelia-router';
+import './common/app-modules';
+import '../@types/index.types';
+import { appRoutes } from './router-distributor';
 
 import './app.scss'
 import { refreshJumpable } from 'components/features/jumpable/jumpable';
@@ -19,14 +14,17 @@ export class App {
 
   private router: Router;
 
-  private httpClient = httpClient;
-
   private subscriptions: Subscription[] = [];
 
-  private constructor(private eventAggregator: EventAggregator) { }
+  private constructor(private eventAggregator: EventAggregator) {
+  }
 
   bind() {
     this.attachEvents();
+  }
+
+  attached() {
+    this.refreshJumpable()
   }
 
   detached() {
@@ -39,28 +37,40 @@ export class App {
         title: 'Router Distributor',
         route: '',
         nav: true,
-        moduleId: PLATFORM.moduleName('./router-distributor/router-distributor')
+        moduleId: appRoutes["router-distributor"]
       },
       // Universal routing, aims to add route and links in the view with minimum setup
       {
         route: 'r/*viewModelName',
-        moduleId: PLATFORM.moduleName('./router-distributor/router-distributor')
+        moduleId: appRoutes["router-distributor"]
+      },
+      {
+        route: 'example-parent-route',
+        title: 'Parent route',
+        nav: true,
+        moduleId: appRoutes.nav["example-parent-route"]
+      },
+      {
+        route: 'dicts',
+        title: 'Dicts',
+        nav: true,
+        moduleId: appRoutes.nav.dicts
       },
     ]);
     this.router = router;
   }
 
+  refreshJumpable() {
+    window.setTimeout(() => {
+      refreshJumpable();
+      console.log("TCL: App -> refreshJumpable -> refreshJumpable")
+    }, 0);
+  }
+
   attachEvents() {
     this.subscriptions.push(
       // https://aurelia.io/docs/routing/configuration#router-events
-      this.eventAggregator.subscribe(RouterEvent.Success, (ev) => {
-        /** 1. Refresh jumpable after each navigation */
-        window.setTimeout(() => {
-          console.log("TCL: App -> attachEvents -> refreshJumpable")
-          refreshJumpable();
-        }, 0);
-      })
+      this.eventAggregator.subscribe(RouterEvent.Success, this.refreshJumpable)
     );
   }
-
 }

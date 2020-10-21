@@ -1,6 +1,15 @@
 body {
   background: black;
-  filter: invert(1);
+  // filter: invert(1);
+  font-family: sans-serif;
+  // color: #ce7979;
+
+  .jumpable {
+    &::before {
+      background: #CAD7E3;
+      color: #f00;
+    }
+  }
 }
 
 .mainRouterContainer {

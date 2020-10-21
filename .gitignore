@@ -16,3 +16,5 @@ build/
 *.db
 # FE
 node_modules
+./client/app-config.json
+/dicts

@@ -4,8 +4,13 @@ import * as appConfigDefault from '../../app-config.json';
 const appConfig = JSON.parse(JSON.stringify(appConfigDefault)).default as unknown as typeof appConfigDefault
 const { Authorization, baseUrl } = appConfig;
 
+const offlineMode = false;
 
-export let httpClient = new HttpClient();
+export const httpClient = offlineMode ? {
+  configure: () => { },
+  fetch: () => { },
+  isRequesting: false
+} : new HttpClient();
 
 httpClient.configure(config => {
   config

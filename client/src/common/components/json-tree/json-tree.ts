@@ -1,5 +1,5 @@
 import { bindable } from 'aurelia-framework';
-import * as JSONEditor from 'jsoneditor';
+import JSONEditor from 'jsoneditor';
 import 'jsoneditor/dist/jsoneditor.min.css';
 
 export interface IJsonEditor {
@@ -19,7 +19,7 @@ export class JsonTree {
 
   @bindable jsonData: any;
 
-  @bindable jsonEditor: IJsonEditor;
+  @bindable jsonEditor: JSONEditor;
 
   private jsonEditorRef: HTMLDivElement;
 

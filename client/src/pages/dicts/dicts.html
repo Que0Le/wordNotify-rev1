@@ -1,0 +1,9 @@
+<template>
+  <h1>${message}</h1>
+  Available Dictionaries
+  <template repeat.for="dict of dicts">
+    <a class="${selectedDictId === dict.id ? 'dicts__selected' : ''} ">${dict.table_name}</a>
+  </template>
+
+  <router-view></router-view>
+</template>

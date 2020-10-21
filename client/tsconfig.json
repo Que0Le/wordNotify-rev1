@@ -12,9 +12,13 @@
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "noImplicitAny": true,
     "sourceMap": true,
+    "strict": true,
+    "strictPropertyInitialization": false,
     "target": "es6",
     "lib": [
+      "es2017",
       "es7",
       "dom",
       "dom.iterable"
