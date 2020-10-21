@@ -35,3 +35,7 @@ node_modules
 /dist
 /test/coverage-jest
 /test/coverage-karma
+
+# App Specific configs
+./app-config.json
+app-config.json

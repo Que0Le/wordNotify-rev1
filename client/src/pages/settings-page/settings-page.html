@@ -1,0 +1,16 @@
+<template>
+  <require from='../../common/components/json-tree/json-tree'></require>
+
+  <template if.bind="vocabConfig">
+    <json-tree
+      json-data.bind="vocabConfig"
+      json-editor.two-way="jsonEditor"
+    ></json-tree>
+  </template>
+
+  <br>
+
+  <button click.delegate="saveSettings()">Save Settings</button>
+
+  <br>
+</template>
