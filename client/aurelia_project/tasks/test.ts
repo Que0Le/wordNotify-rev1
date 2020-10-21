@@ -1,22 +1,16 @@
-import * as jest from 'jest-cli';
+import {Server as Karma} from 'karma';
+import {CLIOptions} from 'aurelia-cli';
 import * as path from 'path';
-import * as packageJson from '../../package.json';
 
-import { CLIOptions } from 'aurelia-cli';
-
-export default (cb) => {
-  let options = packageJson.jest;
-
-  if (CLIOptions.hasFlag('watch')) {
-    Object.assign(options, { watchAll: true});
-  }
-
-
-  jest.runCLI(options, [path.resolve(__dirname, '../../')]).then(({ results }) => {
-    if (results.numFailedTests || results.numFailedTestSuites) {
-      cb('Tests Failed');
-    } else {
-      cb();
-    }
-  });
+let karma = done => {
+  new Karma({
+    configFile: path.join(__dirname, '/../../test/karma.conf.js'),
+    singleRun: !CLIOptions.hasFlag('watch'),
+    autoWatch: CLIOptions.hasFlag('watch')
+  }, function(exitCode) {
+    console.log('Karma has exited with ' + exitCode)
+    process.exit(exitCode)
+  }).start();
 };
+
+export { karma as default };

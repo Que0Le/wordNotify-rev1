@@ -3,6 +3,9 @@
   "compilerOptions": {
     "module": "esnext",
     "skipLibCheck": true,
+    "types": [
+      "jasmine"
+    ],
     "typeRoots": [
       "./node_modules/@types"
     ],
@@ -10,10 +13,11 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "sourceMap": true,
-    "target": "es5",
+    "target": "es6",
     "lib": [
-      "es2015",
-      "dom"
+      "es7",
+      "dom",
+      "dom.iterable"
     ],
     "moduleResolution": "node",
     "baseUrl": "src",
@@ -24,6 +28,9 @@
     "./src/**/*.ts",
     "./test/**/*.ts",
     "./types/**/*.d.ts"
+  ],
+  "exclude": [
+    "./test/e2e/**/*.ts"
   ],
   "atom": {
     "rewriteTsconfig": false

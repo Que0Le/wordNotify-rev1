@@ -1,0 +1,190 @@
+<!doctype html>
+<meta charset="UTF-8">
+<title>Settings</title>
+
+<!-- <div style="text-indent: 10%;">
+    <p style="text-indent: 20%;">test</p>
+    <div style="text-indent: 30%;">
+        <p style="text-indent: 40%;">test</p>
+    </div>
+</div> -->
+
+<div id="htest"></div>
+<button type="button" onclick="collect_input()">Submit</button> 
+<script>
+    function fetchAndSet(dict_db) {
+        const xhr = new XMLHttpRequest();
+        const url = `${window.location.href}api/v1/resources/dicts?dict_db=${dict_db}&random=true`
+        xhr.open("GET", url);
+        xhr.setRequestHeader("Authorization", "Basic " + btoa("tom" + ":" + "thisIStom"))
+        xhr.timeout = 2000
+        xhr.send();
+
+        xhr.onreadystatechange = (e) => {
+            try {
+                payload = JSON.parse(xhr.responseText)
+                document.getElementById(dict_db).innerHTML = `
+            ${payload[0].line} - <i>${dict_db}</i>`
+            } catch (e) {
+                // hm?
+            }
+        }
+    }
+    var stringConstructor = "test".constructor;
+    var numberConstructor = (0).constructor;
+    var arrayConstructor = [].constructor;
+    var objectConstructor = ({}).constructor;
+    var booleanConstructor = (true).constructor;
+
+    //     var p = {
+    //     "0": "value1",
+    //     "b": "value2",
+    //     "key": {
+    //         "key1": 1,
+    //         "key2": 2
+    //     },
+    //     "array": ["a1","a2","a3"],
+    //     "array2": [
+    //         {
+    //             "subarray1_a": "a",
+    //             "subarray1_b": ["b", "b", "b"]
+    //         },
+    //         {
+    //             "subarray2_a": "a",
+    //             "subarray2_b": "b"
+    //         }
+    //     ]
+    // };
+    done = false
+    h = document.getElementById("htest")
+    h.id = 1
+    current_id = 10
+    function goDeep(o, domParents, jsonPath) {
+        if (o.constructor == objectConstructor) {
+            for (var key in o) {
+                div_cont = document.createElement("div")
+                l_key = document.createElement("label")
+                l_key.innerHTML = key
+                l_key.style = "padding: 2em; display: inline;"
+                currentJsonPath = jsonPath + "/" + key
+                div_cont.id = current_id++
+                div_cont.style = "padding-left: 5em;"
+                div_cont.appendChild(l_key)
+                r = domParents.appendChild(div_cont)
+                goDeep(o[key], r, currentJsonPath)
+            }
+        } else if (o.constructor == stringConstructor || o.constructor === numberConstructor) {
+            i_key = document.createElement("input")
+            i_key.setAttribute("type", "text")
+            i_key.value = o
+            i_key.style = "display: inline;"
+            i_key.setAttribute("jsonPath", jsonPath)
+            domParents.appendChild(i_key)
+        } else if (o.constructor == arrayConstructor) {
+            if (o.length == 0 || o[0].constructor == stringConstructor || o[0].constructor == numberConstructor) {
+                i_key = document.createElement("input")
+                i_key.setAttribute("type", "text")
+                i_key.value = o.toString()
+                i_key.style = "display: inline;"
+                i_key.setAttribute("jsonPath", jsonPath)
+                if (o[0].constructor == numberConstructor) {
+                    i_key.setAttribute("arrayNumeric", "true")
+                }
+                domParents.appendChild(i_key)
+            } else {
+                o.forEach(element => {
+                    goDeep(element, domParents, jsonPath)
+                });
+            }
+        } else if (o.constructor == booleanConstructor) {
+            i_key = document.createElement("input")
+            i_key.setAttribute("type", "checkbox")
+            if (o) {
+                i_key.checked = true
+            }
+            i_key.value = o.toString()
+            i_key.style = "display: inline;"
+            i_key.setAttribute("jsonPath", jsonPath)
+            domParents.appendChild(i_key)
+        }
+    }
+    // goDeep(config_json, h, "")
+    payload = null
+    function fetchAndSet(callback) {
+        const xhr = new XMLHttpRequest();
+        // const url = `http://${window.location.host}/api/v1/settings`
+        const url = `http://127.0.0.1:5000/api/v1/settings`
+        xhr.open("GET", url);
+        xhr.setRequestHeader("Authorization", "Basic " + btoa("tom" + ":" + "thisIStom"))
+        xhr.timeout = 2000
+        xhr.send();
+
+        xhr.onreadystatechange = (e) => {
+            try {
+                payload = JSON.parse(xhr.responseText)
+                if (callback && !done) {
+                    console.log("test")
+                    callback(payload, h, "")
+                    done = true // why it runs callback twice? One for OPTION and one for GET?
+                }
+            } catch (e) {
+                // hm?
+            }
+        }
+    }
+    fetchAndSet(goDeep)
+
+    function collect_input() {
+        if (payload == null) return
+        // document.querySelectorAll(`input[jsonpath="/online_sources/name"]`)[0].value = "BACGIANG"
+        all_inputs = Array.from(document.querySelectorAll("input"))
+        // console.log(all_inputs)
+        // all_inputs.forEach(input => {
+        for (let input of all_inputs) {
+            jsonPath = input.getAttribute("jsonpath")
+            // console.log(jsonPath)
+            let current_object = payload
+            paths = jsonPath.split("/").filter(function(el) { return el; });
+            // console.log(current_object.constructor)
+            cmd = "payload"
+            paths.forEach(path => {
+                // if (current_object[path]) {
+                //     current_object = current_object[path]
+                //     cmd = cmd + "[\"" + path + "\"]"
+                // }
+                if (current_object.constructor==objectConstructor) {
+                    current_object = current_object[path]
+                    cmd = cmd + "[\"" + path + "\"]"
+                } else if (current_object.constructor==arrayConstructor) {
+                    if (current_object[0] && current_object[0].constructor == objectConstructor) {
+
+                    } else {
+                        if (input.hasAttribute("arrayNumeric")) {
+                        temp = input.value.split(",").map(Number).filter( value => !Number.isNaN(value) )
+                        } else {
+                            temp = input.value.split(",");
+                        }
+                        cmd = cmd + "=temp"
+                        eval(cmd)
+                    }
+                } else if (current_object.constructor==stringConstructor) {
+                    temp = input.value;
+                    cmd = cmd + "=temp"
+                    console.log(cmd)
+                    console.log(temp)
+                    eval(cmd)
+                } else if (current_object.constructor==numberConstructor) {
+                    temp = parseInt(input.value);
+                    cmd = cmd + "=temp"
+                    eval(cmd)
+                } else if (current_object.constructor==booleanConstructor) {
+                    current_object = input.value;
+                } else {
+                    console.log(current_object)
+
+                }
+            });
+        };
+        console.log(payload)
+    }
+</script>

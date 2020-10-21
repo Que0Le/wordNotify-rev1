@@ -22,8 +22,9 @@ export default class ElementGenerator {
     let className = this.project.makeClassName(name);
 
     this.project.root.add(
-      ProjectItem.text(path.join(subFolders, fileName + '.ts'), this.generateJSSource(className)),
-      ProjectItem.text(path.join(subFolders, fileName + '.html'), this.generateHTMLSource(className))
+      ProjectItem.text(path.join(subFolders, fileName, fileName + '.ts'), this.generateJSSource(className)),
+      ProjectItem.text(path.join(subFolders, fileName, fileName + '.html'), this.generateHTMLSource(className)),
+      ProjectItem.text(path.join(subFolders, fileName, fileName + '.scss'), this.generateSCSSSource())
     );
 
     await this.project.commitChanges();
@@ -35,7 +36,7 @@ export default class ElementGenerator {
   message: string;
 
   constructor() {
-    this.message = 'Hello world';
+    this.message = '${className}';
   }
 }
 `
@@ -46,5 +47,9 @@ export default class ElementGenerator {
   <h1>\${message}</h1>
 </template>
 `
+  }
+
+  generateSCSSSource() {
+    return ` `;
   }
 }
